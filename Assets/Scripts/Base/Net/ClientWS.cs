@@ -48,6 +48,9 @@ public class ClientWS : MonoSingleton<ClientWS>
 
     public void StartUdp(int broadcastPort)
     {
+
+        Debug.Log($"【UDP-WS】StartClinet;  broadcastPort:{broadcastPort}");
+
         mBroadcastPort = broadcastPort;
         mUdpclient = new UdpClient(new IPEndPoint(IPAddress.Parse(Utils.LocalIP()), 0));
         endpoint = new IPEndPoint(IPAddress.Broadcast, broadcastPort);
@@ -91,6 +94,9 @@ public class ClientWS : MonoSingleton<ClientWS>
                 if (buf != null)
                 {
                     string msg = Encoding.UTF8.GetString(buf);
+
+                    Debug.Log($"【UDP-WS】ReciveUdpMsg(S2C): {msg}");
+
                     if (!string.IsNullOrEmpty(msg) && !GetHost)
                     {
                         serverinfo = JsonConvert.DeserializeObject<ServerInfo>(msg);
@@ -100,10 +106,10 @@ public class ClientWS : MonoSingleton<ClientWS>
             }
             catch (Exception e)
             {
-                Debug.Log(e);
+                Debug.Log("【UDP-WS】" + e.Message);
             }
         }
-        Debug.LogWarning("ReciveUdpMsg OUT");
+        Debug.LogWarning("【UDP-WS】ReciveUdpMsg OUT");
     }
 
     //使用udp发送消息
@@ -129,6 +135,7 @@ public class ClientWS : MonoSingleton<ClientWS>
     {
         if (!IsConnected && serverinfo != null)
         {
+            Debug.Log("【UDP-WS】StopUdp ");
             InitSocket(serverinfo.IP, serverinfo.port);
             StopUdp();
         }
@@ -139,7 +146,9 @@ public class ClientWS : MonoSingleton<ClientWS>
                 IP = Utils.LocalIP(),
                 port = mBroadcastPort
             };
-            SendUpdMsg(JsonConvert.SerializeObject(clientInfo));
+            string msg = JsonConvert.SerializeObject(clientInfo);
+            SendUpdMsg(msg);
+            Debug.Log($"【UDP-WS】UDP/C2S : {msg} ");
         }
     }
 
@@ -151,8 +160,8 @@ public class ClientWS : MonoSingleton<ClientWS>
     }
 
     public void InitSocket(string server_ip, int port)
-    {
-        Debug.Log("call InitSocket");
+    {        
+        Debug.Log("【UDP-WS】InitSocket----> ip = " + server_ip + " and port = " + port);
         if (mSocket != null)
         {
             mSocket.OnOpen -= SocketOnOpen;
@@ -163,7 +172,6 @@ public class ClientWS : MonoSingleton<ClientWS>
             mSocket = null;
             //StopCoroutine(ClientHeartHeat());
         }
-        Debug.Log("InitSocket----> ip = " + server_ip + " and port = " + port);
         try
         {
             mAddress = string.Format("ws://{0}:{1}", server_ip, port);
@@ -206,13 +214,15 @@ public class ClientWS : MonoSingleton<ClientWS>
             {
                 //直接发给服务器了，不需要放进队列里等待发送。
                 mSocket.SendAsync(strData);
+
+                OnDebug(strData, true);
             }
 
         }
         catch (Exception e)
         {
             //mClientSocket.Close();
-            Debug.Log("发送失败1 " + e.Message);
+            Debug.Log("【UDP-WS】发送失败 " + e.Message);
         }
     }
 
@@ -237,7 +247,7 @@ public class ClientWS : MonoSingleton<ClientWS>
 
     private void SocketOnOpen(object sender, OpenEventArgs e)
     {
-        Debug.Log(string.Format("Connected: {0}", mAddress));
+        Debug.Log(string.Format("【UDP-WS】Connected: {0}", mAddress));
         IsConnected = true;
         canHeart = true;
         SendHeartHeat();
@@ -248,7 +258,7 @@ public class ClientWS : MonoSingleton<ClientWS>
     {
         if (e.IsBinary)
         {
-            Debug.Log(string.Format("Receive Bytes ({1}): {0}", e.Data, e.RawData.Length));
+            Debug.Log(string.Format("【UDP-WS】Receive Bytes ({1}): {0}", e.Data, e.RawData.Length));
         }
         else if (e.IsText)
         {
@@ -260,8 +270,8 @@ public class ClientWS : MonoSingleton<ClientWS>
 
     private void SocketOnClose(object sender, CloseEventArgs e)
     {
-        Debug.LogError("call SocketOnClose");
-        Debug.Log(string.Format("Closed: StatusCode: {0}, Reason: {1}", e.StatusCode, e.Reason));
+        Debug.LogError("【UDP-WS】call SocketOnClose");
+        Debug.Log(string.Format("【UDP-WS】Closed: StatusCode: {0}, Reason: {1}", e.StatusCode, e.Reason));
         PopTips.Instance.ShowSystemTips(Utils.GetLanguage("Disconnected"), -1);
         serverinfo = null;
         IsConnected = false;
@@ -270,8 +280,8 @@ public class ClientWS : MonoSingleton<ClientWS>
 
     private void SocketOnError(object sender, ErrorEventArgs e)
     {
-        Debug.LogError("call SocketOnError");
-        Debug.Log(string.Format("Error: {0}", e.Message));
+        Debug.LogError("【UDP-WS】call SocketOnError");
+        Debug.Log(string.Format("【UDP-WS】Error: {0}", e.Message));
         PopTips.Instance.ShowSystemTips(Utils.GetLanguage("Disconnected"), -1);
         serverinfo = null;
         IsConnected = false;
@@ -314,4 +324,23 @@ public class ClientWS : MonoSingleton<ClientWS>
             mUdpclient = null;
         }
     }
+
+
+    public void OnDebug(string strMsg, bool C2S = true)
+    {
+        try
+        {
+            string cmdValue = strMsg.Split(new[] { "\"cmd\":" }, StringSplitOptions.None)[1].Split(',')[0].Trim();
+            string rpcName = C2S ?
+               $"{Enum.GetName(typeof(C2S_CMD), (C2S_CMD)(int.Parse(cmdValue)))} -" :
+                $"{Enum.GetName(typeof(S2C_CMD), (S2C_CMD)(int.Parse(cmdValue)))} -";
+
+            Debug.LogWarning($"【UDP-WS】WS/{rpcName} -  {strMsg}");
+        }
+        catch (Exception ex) { }
+    }
+
+
+
+
 }

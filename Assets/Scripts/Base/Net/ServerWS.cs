@@ -59,6 +59,9 @@ public class ServerWS : MonoBehaviour
 
     private void ReciveUdpMsg()
     {
+
+        //#seaweed# 网络重连
+
         while (!IsStop && mUdpclient != null)
         {
             //IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 0);
@@ -66,7 +69,7 @@ public class ServerWS : MonoBehaviour
             if (buf != null)
             {
                 string msg = Encoding.UTF8.GetString(buf);
-                Debug.Log($"ReciveUdpMsg: {msg}");
+                Debug.Log($"【UDP-WS】ReciveUdpMsg(C2S): {msg}"); //#seaweed#
                 if (!string.IsNullOrEmpty(msg))
                 {
                     ServerInfo srvInfo = new ServerInfo
@@ -84,10 +87,17 @@ public class ServerWS : MonoBehaviour
     //使用udp发送消息
     public void SendUpdMsg(string strMsg, IPEndPoint endPoint)
     {
-        if (mUdpclient != null)
+        try
         {
-            byte[] bf = Encoding.UTF8.GetBytes(strMsg);
-            mUdpclient.Send(bf, bf.Length, endPoint);
+            if (mUdpclient != null)
+            {
+                byte[] bf = Encoding.UTF8.GetBytes(strMsg);
+                mUdpclient.Send(bf, bf.Length, endPoint);
+            }
+        }
+        catch (Exception)
+        {
+            throw;
         }
     }
 
@@ -97,14 +107,14 @@ public class ServerWS : MonoBehaviour
         client.Disconnected += OnClientDisconnected;
         client.StartReceiving();
 
-        Debug.Log(string.Format("Client {0} Connected...", client.Id));
+        Debug.Log(string.Format("【UDP-WS】Client {0} Connected...", client.Id));
     }
 
     private void OnClientDisconnected(WebSockets.ClientConnection client)
     {
         client.ReceivedTextualData -= OnReceivedTextualData;
         client.Disconnected -= OnClientDisconnected;
-        Debug.Log(string.Format("Client {0} Disconnected...",client.Id));
+        Debug.Log(string.Format("【UDP-WS】Client {0} Disconnected...", client.Id));
         EventCenter.Instance.EventTrigger(EventHandle.PLAYER_DISCONNECT, client);
     }
 
@@ -125,6 +135,7 @@ public class ServerWS : MonoBehaviour
     public void SendToClient(WebSockets.ClientConnection client,string msg)
     {
         client.Send(msg);
+        OnDebug(msg, false);
     }
 
     public void SendToAllClient(string msg)
@@ -132,6 +143,7 @@ public class ServerWS : MonoBehaviour
         if(mServer != null)
         {
             mServer.SendToAllClient(msg);
+            OnDebug(msg, false);
         }
     }
 
@@ -150,5 +162,19 @@ public class ServerWS : MonoBehaviour
             mUdpclient = null;
         }
         StopServer();
+    }
+
+    public void OnDebug(string strMsg, bool C2S = true)
+    {
+        try
+        {
+            string cmdValue = strMsg.Split(new[] { "\"cmd\":" }, StringSplitOptions.None)[1].Split(',')[0].Trim();
+            string rpcName = C2S ?
+               $"{Enum.GetName(typeof(C2S_CMD), (C2S_CMD)(int.Parse(cmdValue)))} -" :
+                $"{Enum.GetName(typeof(S2C_CMD), (S2C_CMD)(int.Parse(cmdValue)))} -";
+
+            Debug.LogWarning($"【UDP-WS】WS/{rpcName} -  {strMsg}");
+        }
+        catch (Exception ex) { }
     }
 }

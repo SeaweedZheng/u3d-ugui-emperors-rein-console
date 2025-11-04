@@ -245,7 +245,13 @@ void KeyUp(bool isAdd) ： 加减回调函数。
 
 
 
- 
+## 长按箭头加、长按箭头减（快速加减）
+
+SelectedSectionDownAndLeft ： 长按减函数
+
+SelectedSectionUpAndRight ： 长按加函数
+
+
 ## 确定按钮，返回按钮 -- 回调：
 
 void OnRefreshIOCanvas() ： 保存桉树修改
@@ -287,6 +293,90 @@ void OnRefreshIOCanvas() ： 保存桉树修改
 /*#seaweed#  */
 
 
+# 参照做法
+参照IOSectionState.CountDown:的做法
 
 
+
+# 远程连接硬件调试：
+
+	SBoxInit.Instance.Init("192.168.3.187", OnInitSBox);
+	
+	
+	
+	
+	
+	
+# =========网络层：
+
+
+## NetMgr
+
+* NetMgr 可以选择 ServerWS 或 ClientWS
+
+* 服务器给客户端，或客户端给服务器 发数据的 统一接口。
+
+
+Messenger.AddListener<WSSrvMsgData>(MessageName.Event_NetworkWSServerData, OnWSServerData); // 客户端发给服务器的数据
+Messenger.AddListener<byte[]>(MessageName.Event_NetworkClientData, OnClientData);  // 服务器发给客户端的数据
+	
+	
+## ServerWS
+
+* udp 广播？
+
+*  StartServer 创建udp 
+
+-- 开启udp 
+
+-- 开启websocket
+
+-- 接收到 客户端 udp的请求时， 返回服务器的"ip"和"端口"
+
+
+
+
+
+
+
+## ClientWS
+
+* udp 广播 ？
+
+* websocket 给服务器发数据。
+
+* StartUdp() : 
+-- 开启udp 
+-- 监听udp数据
+-- 定时发送udp数据 请求服务器ip和端口
+拿到服务器地址后，停止定时发udp,开始websocket的连接
+
+	
+	
+
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
 

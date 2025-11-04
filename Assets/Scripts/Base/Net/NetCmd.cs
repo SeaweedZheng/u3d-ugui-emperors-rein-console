@@ -9,13 +9,17 @@ public enum S2C_CMD
     S2C_ChangeLanguage,                        //多语言切换
 
 
+   
+
+
     S2C_InitJackpotInfo = 1500,                //初始化彩金信息
     S2C_JackpotBet,                            //彩金下注
     S2C_KickOut,                               //踢出
     S2C_ConnectFail,                           //连接失败
 
-    //【推币机】新加的协议
+    //【推币机】新加的协议  （新的协议名）
     S2C_ReadConfR,  // 返回配置
+   // S2C_LoginR,
 }
 //客户端发送给服务器的消息
 public enum C2S_CMD

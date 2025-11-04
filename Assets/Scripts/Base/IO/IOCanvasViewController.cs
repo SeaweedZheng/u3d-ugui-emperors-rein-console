@@ -205,11 +205,12 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
     private void RefreshParamsPanel()
     {
 
-        Debug.LogError($"@1 groupId: {IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId}");
+        //Debug.LogError($"@1 groupId: {IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId}");
         // 设置
         IOCanvasModel.Instance.groupId = IOCanvasModel.Instance.tempGroupId;
 
-        Debug.LogError($"@2 groupId: {IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId}");
+        //IOCanvasModel.Instance.BallValue = IOCanvasModel.Instance.tempCfgData.BallValue;
+        //Debug.LogError($"@2 groupId: {IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId}");
 
         for (int i = 0; i < selectionList.Count; i++)
         {
@@ -475,6 +476,12 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         int temp = 0;
         switch (selectSection.state)
         {
+            case IOSectionState.BallValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                    () => { 
+                        //ValueChange(true, ref IOCanvasModel.Instance.tempCfgData.BallValue, 0, 0);  //长按加数
+                    }));
+                break;
             case IOSectionState.NewGameMode:
                 ValueChangeLoop(true, ref IOCanvasModel.Instance.tempCfgData.NewGameMode, Enum.GetValues(typeof(IONewGameMode)).Cast<int>().Min(), Enum.GetValues(typeof(IONewGameMode)).Cast<int>().Max());
                 break;
@@ -604,6 +611,13 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         int temp = 0;
         switch (selectSection.state)
         {
+            case IOSectionState.BallValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => { 
+                    //ValueChange(false, ref IOCanvasModel.Instance.tempCfgData.CountDown, IOCanvasModel.MIN_COUNT_DOWN, IOCanvasModel.MAX_COUNT_DOWN);  // 长按减   
+                }));
+                break;
+
             case IOSectionState.NewGameMode:
                 ValueChangeLoop(false, ref IOCanvasModel.Instance.tempCfgData.NewGameMode, Enum.GetValues(typeof(IONewGameMode)).Cast<int>().Min(), Enum.GetValues(typeof(IONewGameMode)).Cast<int>().Max());
                 break;
@@ -793,20 +807,24 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void KeyUp(bool isAdd)
     {
-        Debug.LogError($"KeyUp isAdd:{isAdd}");
+        //Debug.LogError($"KeyUp isAdd:{isAdd}");
 
         if (selectSection.state == IOSectionState.GroupId)
         {
             ValueChange(isAdd, ref IOCanvasModel.Instance.tempGroupId, 0, 10);
             return;
         }
-
         if (!selectSection.selected || pressCorutine == null) return;
         if (!pressFlag)
             switch (selectSection.state)
             {
                 case IOSectionState.GroupId:
-                    Debug.LogError($"i am GroupId ");
+                    //Debug.LogError($"i am GroupId ");
+                    break;
+                case IOSectionState.BallValue:
+                    {
+                        ValueChange(isAdd, ref IOCanvasModel.Instance.tempCfgData.BallValue, 0, 0);
+                    }
                     break;
                 case IOSectionState.NewGameMode:
                     ValueChangeLoop(isAdd, ref IOCanvasModel.Instance.tempCfgData.NewGameMode, Enum.GetValues(typeof(IONewGameMode)).Cast<int>().Min(), Enum.GetValues(typeof(IONewGameMode)).Cast<int>().Max());
@@ -1444,6 +1462,30 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                max : value + 900
                : value - offset < min ?
                min : value - offset;
+        }
+        else if (selectSection.state == IOSectionState.BallValue)
+        {
+            int index = 0;
+            for (int i = 0; i < IOCanvasModel.Instance.BallValueLst.Length; i++)
+            {
+                if (value == IOCanvasModel.Instance.BallValueLst[i])
+                {
+                    index = i;
+                    break;
+                }
+            }
+            index = add ? (index + 1) : (index-1);
+
+            if (index <0)
+            {
+                index = IOCanvasModel.Instance.BallValueLst.Length - 1;
+            }
+            if (index >= IOCanvasModel.Instance.BallValueLst.Length)
+            {
+                index = 0;
+            }
+
+            value = IOCanvasModel.Instance.BallValueLst[index];
         }
         else
         {

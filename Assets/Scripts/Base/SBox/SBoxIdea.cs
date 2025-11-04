@@ -176,6 +176,8 @@ namespace SBoxApi
         public int PulseValue;                      // 脉冲比例
         public int NewGameMode;                     // 开始新一轮游戏模式，0：自动开始，1：手动开始
         public int NetJackpot;                      // 是否启用联网彩金 0:关闭 1:开启
+        public int JackpotLevel;
+        public int BallValue;						  //球币比例 1球几币	
     }
 
 
@@ -674,6 +676,8 @@ namespace SBoxApi
             sBoxConfData.PulseValue = sBoxPacket.data[pos++];
             sBoxConfData.NewGameMode = sBoxPacket.data[pos++];
             sBoxConfData.NetJackpot = sBoxPacket.data[pos++];
+            sBoxConfData.JackpotLevel = sBoxPacket.data[pos++];
+            sBoxConfData.BallValue = sBoxPacket.data[pos++];
             EventCenter.Instance.EventTrigger(SBoxEventHandle.SBOX_READ_CONF, sBoxConfData);
         }
 
@@ -793,7 +797,10 @@ namespace SBoxApi
             sBoxPacket.data[pos++] = sBoxConfData.LostLock;
             sBoxPacket.data[pos++] = sBoxConfData.PulseValue;
             sBoxPacket.data[pos++] = sBoxConfData.NewGameMode;
+            // pos = 30
             sBoxPacket.data[pos++] = sBoxConfData.NetJackpot;
+            sBoxPacket.data[pos++] = sBoxConfData.JackpotLevel;
+            sBoxPacket.data[pos++] = sBoxConfData.BallValue;
             SBoxIOEvent.AddListener(sBoxPacket.cmd, WriteConfR);
             SBoxIOStream.Write(sBoxPacket);
         }

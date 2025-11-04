@@ -1,9 +1,12 @@
 using Newtonsoft.Json;
+using Newtonsoft.Json.Linq;
 using SBoxApi;
 using System;
 using System.Collections.Generic;
+using System.Security.Policy;
 using UnityEngine;
 using WebSockets;
+using static UnityEditor.Progress;
 
 public class NetMessageController : BaseManager<NetMessageController>
 {
@@ -113,6 +116,25 @@ public class NetMessageController : BaseManager<NetMessageController>
         {
             // 组号不对
             Debug.LogError($"组号不对，拒绝登录：macId: {loginInfo.macId} ; LoginInfo: {info.jsonData}");
+
+  /*
+            JObject req = new JObject();
+            req.Add("code", 0);
+            req.Add("msg", "");
+            req.Add("data", "");
+          
+        MsgInfo mes = new MsgInfo
+        {
+            cmd = (int)S2C_CMD.S2C_JackpotMinBet,
+            id = player.macId,
+            jsonData = JsonConvert.SerializeObject(minBets)
+        };
+        NetMgr.Instance.SendToClient(client, JsonConvert.SerializeObject(mes));
+        OnResponseDebug((S2C_CMD)mes.cmd, mes);
+             * 
+             */
+
+
             return;
         }
         if (IOCanvasModel.Instance.seatIdMacIdMap.ContainsKey(loginInfo.seatId) 

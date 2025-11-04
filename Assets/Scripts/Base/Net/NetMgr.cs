@@ -70,7 +70,7 @@ public class NetMgr : MonoSingleton<NetMgr>
     {
         clientWS?.SendToServer(strMsg);
 
-        OnDebug(strMsg, true);
+        //OnDebug(strMsg, true);
     }
 
     //服务器发送数据给客户端
@@ -79,7 +79,7 @@ public class NetMgr : MonoSingleton<NetMgr>
         serverWS?.SendToClient(client, strMsg);
 
 
-        OnDebug(strMsg,false);
+        //OnDebug(strMsg,false);
     }
 
     //服务器给所有客户端发送消息
@@ -87,7 +87,7 @@ public class NetMgr : MonoSingleton<NetMgr>
     {
         serverWS?.SendToAllClient(strMsg);
 
-        OnDebug(strMsg, false);
+        //OnDebug(strMsg, false);
     }
 
     //处理WS服务器收到的消息
@@ -98,7 +98,7 @@ public class NetMgr : MonoSingleton<NetMgr>
         string singlePacket = data.Data;
         MsgInfo info = null;
 
-        OnDebug(singlePacket, true);
+        //OnDebug(singlePacket, true);
         try
         {
             info = JsonConvert.DeserializeObject<MsgInfo>(singlePacket);
@@ -133,28 +133,19 @@ public class NetMgr : MonoSingleton<NetMgr>
         Messenger.RemoveListener<WSSrvMsgData>(MessageName.Event_NetworkWSServerData, OnWSServerData);
         Messenger.RemoveListener<byte[]>(MessageName.Event_NetworkClientData, OnClientData);
     }
-
+    /*
     public void OnDebug(string strMsg, bool C2S)
     {
         try
         {
             string cmdValue = strMsg.Split(new[] { "\"cmd\":" }, StringSplitOptions.None)[1].Split(',')[0].Trim();
             string rpcName = C2S ?
-               $"SendToClinet : {Enum.GetName(typeof(C2S_CMD), (C2S_CMD)(int.Parse(cmdValue)))} -" :
-                $"SendToServer : {Enum.GetName(typeof(S2C_CMD), (S2C_CMD)(int.Parse(cmdValue)))} -";
+               $"{Enum.GetName(typeof(C2S_CMD), (C2S_CMD)(int.Parse(cmdValue)))} -" :
+                $"{Enum.GetName(typeof(S2C_CMD), (S2C_CMD)(int.Parse(cmdValue)))} -";
 
             Debug.LogWarning($"{rpcName} -  {strMsg}");
         }
         catch (Exception ex) { }
-        /*
-        string rpcName = "";
-        Regex regex = new Regex("\"cmd\":\\s*(\\d+)");
-        Match match = regex.Match(strMsg);
-        if (match.Success)
-        {
-            string cmdValue = match.Groups[1].Value;
-            rpcName = Enum.GetName(typeof(S2C_CMD), (S2C_CMD)(int.Parse(cmdValue)));
-        }
-        Debug.LogWarning($"SendToClient: {rpcName} -  {strMsg}");*/
     }
+    */
 }

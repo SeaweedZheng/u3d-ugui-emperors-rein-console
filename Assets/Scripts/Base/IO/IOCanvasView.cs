@@ -299,7 +299,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         // 场地
         //#seaweed# InstantiateEasyShow(IOParams.PlaceMode.ToString(), (IOCanvasModel.Instance.tempCfgData.PlaceType.ToString()), fontSize: fontSize);
 
-
+        //IOCanvasModel.Instance.tempBallValue = IOCanvasModel.Instance.BallValue;
         IOCanvasModel.Instance.tempGroupId = IOCanvasModel.Instance.groupId;
         InstantiateBaseSection(IOParams.GroupId.ToString(), IOCanvasModel.Instance.groupId, onClick: () => { OnSectionClick((int)IOParams.GroupId, IOSectionState.GroupId);  });
 
@@ -314,6 +314,11 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         //#seaweed# InstantiateBaseSection(IOParams.LEDBrightness.ToString(), IOCanvasModel.Instance.LEDBrightness, onClick: () => {   OnSectionClick((int)IOParams.LEDBrightness, IOSectionState.LEDBrightness); });
         //#seaweed# InstantiateBaseSection(IOParams.SoundVolumScale.ToString(), IOCanvasModel.Instance.SoundVolumScale, onClick: () => {   OnSectionClick((int)IOParams.SoundVolumScale, IOSectionState.SoundVolumScale); });
         //#seaweed# InstantiateBaseSection(IOParams.JackpotLimit.ToString(), IOCanvasModel.Instance.tempCfgData.BetsMinOfJackpot, onClick: () => { OnSectionClick((int)IOParams.JackpotLimit, IOSectionState.JackpotLimit); });
+
+
+        InstantiateBaseSection(IOParams.BallValue.ToString(), IOCanvasModel.Instance.tempCfgData.BallValue, onClick: () => { OnSectionClick((int)IOParams.BallValue, IOSectionState.BallValue); }, ioParams: IOParams.BallValue);
+
+
 
         InstantiateBlank();
         InstantiateBlank();
@@ -1639,6 +1644,9 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         baseSelection.transform.localScale = Vector3.one;
         selectionList.Add(baseSelection);
     }
+
+
+
 
     private void InistantiateSwitchSection(string title, List<int> orignalList, UnityAction onClick = null, bool showBg = false)
     {

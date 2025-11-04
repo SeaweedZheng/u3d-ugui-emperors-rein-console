@@ -207,7 +207,8 @@
         "CheckBell":"测试铃铛",
         "SelectCoinPushMachine":"选择推币机",
         "CoinPushMachine":"推币机",
-        "GroupId":"组号"
+        "GroupId":"组号",
+        "BallValue":"回球比例"
     },
     "cht":{
         "TestScreen":"測試屏幕",
@@ -417,7 +418,8 @@
         "CheckBell":"測試鈴鐺",
         "SelectCoinPushMachine":"選擇推幣機",
         "CoinPushMachine":"推幣機",
-        "GroupId":"組號"
+        "GroupId":"組號",
+        "BallValue":"回球比例"
     },
     "en":{
         "TestScreen":"TestScreen",
@@ -627,6 +629,7 @@
         "CheckBell":"Check Bell",
         "SelectCoinPushMachine":"Choose a coin pusher",
         "CoinPushMachine":"Coin Pusher",
-        "GroupId":"Group ID"
+        "GroupId":"Group ID",
+        "BallValue":"coin per ball"
     }
 }

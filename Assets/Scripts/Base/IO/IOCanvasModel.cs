@@ -56,6 +56,7 @@ public enum IOState
 public enum IOSectionState
 {
     GroupId,
+    BallValue,
 
     NewGameMode,
     SkillMode,
@@ -142,6 +143,11 @@ public enum IOParams
 
     /// <summary> 彩票比例 </summary>
     TicketRatio,
+
+
+    /// <summary> 1球多少分 </summary>
+    BallValue,
+
 
     /// <summary> 退票模式 </summary>
     //#seaweed# RefundMode,
@@ -595,6 +601,8 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
             LostLockCustom = data.LostLockCustom,
             PulseValue = data.PulseValue,
             NewGameMode = data.NewGameMode,
+
+            BallValue = data.BallValue,
         };
     }
 
@@ -669,8 +677,18 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
     const string PARAM_GROUP_ID = "PARAM_GROUP_ID";
 
 
+    /// <summary> 座位号机台号绑定 </summary>
+    public Dictionary<int,int> seatIdMacIdMap = new Dictionary<int,int>();
 
 
-    public  Dictionary<int,int> seatIdMacIdMap = new Dictionary<int,int>(); 
+    /// <summary> 一球几分 </summary>
+    public int BallValue
+    {
+        get => CfgData.BallValue;
+        set => CfgData.BallValue = value;
+    }
+
+    //public int tempBallValue = 0;
+    public  int[] BallValueLst = new int[] { 1, 2, 5, 10, 20, 100 };
 
 }
