@@ -51,30 +51,7 @@ public class Load : MonoBehaviour
         }
         else
         {
-            SBoxInit.Instance.Init("192.168.3.187", OnInitSBox);
-        }
-
-
-
-
-
-        if (StartUpConfig.isMachine)
-        {
-            //Utils.ReadGameData();
-            
-        }
-        else
-        {
-
-
-            /*
-            StreamingAssetsBundleLoader02.Instance.LoadAsset<GameObject>("io", "IOCanvas", (prefab) =>
-            {
-                if (prefab == null) return;
-                GameObject IOCanvasPrefab = prefab;
-                GameObject gameObject = Instantiate(IOCanvasPrefab, transform);
-            });
-            */
+            SBoxInit.Instance.Init("192.168.3.225", OnInitSBox);
         }
     }
     private GameObject IOCanvasViewObj;

@@ -67,7 +67,7 @@ namespace SBoxApi
     {
         public int MachineId;        // 机台号
         public int SeatId;           // 分机号/座位号
-        public int majorBet;              // gtand, major  //   当前的押分,为了避免丢失小数，需要乘以100，硬件读取这个值会除以100后使用
+        public int majorBet;         // gtand, major  //   当前的押分,为了避免丢失小数，需要乘以100，硬件读取这个值会除以100后使用
         public int BetPercent;       // 100    押分比例，目前拉霸(推币机)默认值传1，同样需要乘以100
         public int ScoreRate;        // 1000   分值比，1分多少钱，需要乘以1000再往下传
         public int JpPercent;		// 1000   分机彩金百分比，每次押分贡献给彩金的比例。需要乘以1000再往下传

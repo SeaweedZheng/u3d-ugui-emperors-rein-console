@@ -3,8 +3,11 @@ using UnityEngine;
 
 public static class StartUpConfig
 {
-    //public const string url = "http://8.138.140.180:8124/EmperorsRein200/Console";
 
+    // 测试服
+    //public const string url = "http://8.138.140.180:8124/EmperorsRein200/ConsoleTest";
+
+    // 正式服
     public const string url = "http://chresouce.oss-cn-guangzhou.aliyuncs.com/luomajp";
 
 
@@ -54,24 +57,6 @@ public static class StartUpConfig
     }
 
 
-
-    static bool _isMock = true;
-    public static bool isMock
-    {
-        get
-        {
-            if(_isRelease) 
-                return false;
-            return _isMock;
-        }
-    }
-
-
-    static bool _isRelease = false;
-    public static bool isRelease
-    {
-        get => _isRelease;
-    }
 
 
     static bool _isMachine = false;

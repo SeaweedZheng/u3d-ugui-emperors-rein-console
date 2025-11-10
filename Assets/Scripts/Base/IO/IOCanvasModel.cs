@@ -148,6 +148,8 @@ public enum IOParams
     /// <summary> 1球多少分 </summary>
     BallValue,
 
+    /// <summary> 上下分（新增） </summary>
+    ScoreUpRatio,
 
     /// <summary> 退票模式 </summary>
     //#seaweed# RefundMode,
@@ -691,4 +693,8 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
     //public int tempBallValue = 0;
     public  int[] BallValueLst = new int[] { 1, 2, 5, 10, 20, 100 };
 
+
+
+    // 当前显示的彩金值
+    public int[] CurJackpotOut = new int[] { 0, 0 ,0 ,0};
 }

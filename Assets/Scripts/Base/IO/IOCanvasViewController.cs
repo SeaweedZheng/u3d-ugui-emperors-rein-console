@@ -1476,13 +1476,26 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
             }
             index = add ? (index + 1) : (index-1);
 
+
+            /*#seaweed#  限制到 5 开始
             if (index <0)
             {
                 index = IOCanvasModel.Instance.BallValueLst.Length - 1;
             }
             if (index >= IOCanvasModel.Instance.BallValueLst.Length)
             {
-                index = 0;
+                index = 0;  
+            }
+            */
+
+            // 限制到5开始（1球5分）
+            if (index < 2)
+            {
+                index = IOCanvasModel.Instance.BallValueLst.Length - 1;
+            }
+            if (index >= IOCanvasModel.Instance.BallValueLst.Length)
+            {
+                index = 2;
             }
 
             value = IOCanvasModel.Instance.BallValueLst[index];

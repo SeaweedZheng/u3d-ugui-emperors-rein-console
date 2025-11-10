@@ -320,6 +320,13 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
 
 
+        InstantiateBaseSection(IOParams.ScoreUpRatio.ToString(), IOCanvasModel.Instance.tempCfgData.ScoreUpUnit, onClick: () => { OnSectionClick((int)IOParams.ScoreUpRatio, IOSectionState.ScoreUpRatio); }, ioParams: IOParams.ScoreUpRatio);
+
+
+        
+
+
+
         InstantiateBlank();
         InstantiateBlank();
         GameObject parent = new GameObject();

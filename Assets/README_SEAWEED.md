@@ -300,10 +300,15 @@ void OnRefreshIOCanvas() ： 保存桉树修改
 
 # 远程连接硬件调试：
 
-	SBoxInit.Instance.Init("192.168.3.187", OnInitSBox);
+SBoxInit.Instance.Init("192.168.3.187", OnInitSBox);
 	
 	
 	
+# =========Modle
+
+#  IOCanvasModel
+
+* 后台彩金数据存储的model
 	
 	
 	
@@ -356,13 +361,16 @@ Messenger.AddListener<byte[]>(MessageName.Event_NetworkClientData, OnClientData)
 
 	
 	
+## NetMessageController
+
+* 彩金后台-响应分机彩金押注的业务逻辑
 	
 	
 	
 	
 	
 	
-	
+	NetCmd
 	
 	
 	

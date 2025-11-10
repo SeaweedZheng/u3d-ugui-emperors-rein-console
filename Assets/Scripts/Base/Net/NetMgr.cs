@@ -112,7 +112,7 @@ public class NetMgr : MonoSingleton<NetMgr>
             switch ((C2S_CMD)info.cmd)
             {
                 case C2S_CMD.C2S_HeartHeat:
-                    info.cmd = (int)S2C_CMD.S2C_HeartHeat;
+                    info.cmd = (int)S2C_CMD.S2C_HeartHeatR;
                     info.id = info.id;
                     SendToClient(data.Client, JsonConvert.SerializeObject(info));
                     break;
