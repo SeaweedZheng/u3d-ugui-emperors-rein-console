@@ -6,7 +6,8 @@ using UnityEngine;
 public class NetMgr : MonoSingleton<NetMgr>
 {
     private readonly int port = 6222;
-    public int broadcastPort = 10999;
+    //#seaweed# ¸Ä
+    public int broadcastPort = 10122; //10999; //  1220 >> 10122
     public bool IsHost = false;
 
     //WebSocket
