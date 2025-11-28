@@ -1,4 +1,5 @@
 
+using JetBrains.Annotations;
 using Newtonsoft.Json;
 using SBoxApi;
 using System;
@@ -664,15 +665,23 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
         {
             if (_groupId == null) {
                 //PlayerPrefs.DeleteKey(PARAM_GROUP_ID);_groupId = 0;
-                _groupId = PlayerPrefs.GetInt(PARAM_GROUP_ID, 0);
+                int oldValue = PlayerPrefs.GetInt(PARAM_GROUP_ID, 0);            
+                _groupId = SQLite.Instance.GetInit(PARAM_GROUP_ID, oldValue > 0? oldValue:0);
+
             }
             return (int)_groupId;
         }
         set
         {
             _groupId = value;
-            PlayerPrefs.SetInt(PARAM_GROUP_ID, value);
-            PlayerPrefs.Save();
+            SQLite.Instance.SetInit(PARAM_GROUP_ID, value);
+            //PlayerPrefs.SetInt(PARAM_GROUP_ID, value);
+            //PlayerPrefs.Save();
+
+            //SQLite.Instance.SetString("TEST_STRING", "i am string");
+            //SQLite.Instance.SetFloat("TEST_FLOAT", 0.89f);
+            //Debug.LogError($"TEST_STRING={SQLite.Instance.GetString("TEST_STRING", "--")}  -  TEST_FLOAT={SQLite.Instance.GetFloat("TEST_FLOAT", 22.2f)}");
+
         }
     }
     int? _groupId = null;

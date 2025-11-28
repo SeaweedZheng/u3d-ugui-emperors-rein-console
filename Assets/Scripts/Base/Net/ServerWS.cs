@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using JetBrains.Annotations;
+using Newtonsoft.Json;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -57,31 +58,51 @@ public class ServerWS : MonoBehaviour
         mServer.Start();
     }
 
+
+    int recriveId = 0;
+
     private void ReciveUdpMsg()
     {
+        if(++recriveId > 1000) 
+            recriveId = 0;
+        int id = recriveId;
 
+        DebugUtils.LogWarning($"【UDP-WS】==== <color=red>ReciveUdpMsg Start</color> id: {id}");
         //#seaweed# 网络重连
 
         while (!IsStop && mUdpclient != null)
         {
-            //IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 0);
-            byte[] buf = mUdpclient.Receive(ref endpoint);
-            if (buf != null)
+            try
             {
-                string msg = Encoding.UTF8.GetString(buf);
-                Debug.Log($"【UDP-WS】ReciveUdpMsg(C2S): {msg}"); //#seaweed#
-                if (!string.IsNullOrEmpty(msg))
+
+                //IPEndPoint endpoint = new IPEndPoint(IPAddress.Any, 0);
+
+                DebugUtils.Log("【UDP-WS】wait for next udp msg");
+                byte[] buf = mUdpclient.Receive(ref endpoint);   // 这里会一直卡主,直到读取到数据。
+                if (buf != null)
                 {
-                    ServerInfo srvInfo = new ServerInfo
+                    string msg = Encoding.UTF8.GetString(buf);
+                    DebugUtils.Log($"【UDP-WS】<color=yellow>UDP down</color>: {msg}");
+
+                    if (!string.IsNullOrEmpty(msg))
                     {
-                        IP = serverinfo.IP,
-                        port = serverinfo.port
-                    };
-                    SendUpdMsg(JsonConvert.SerializeObject(srvInfo), endpoint);
+                        ServerInfo srvInfo = new ServerInfo
+                        {
+                            IP = serverinfo.IP,
+                            port = serverinfo.port
+                        };
+                        SendUpdMsg(JsonConvert.SerializeObject(srvInfo), endpoint);
+                    }
                 }
+                Thread.Sleep(500); //500毛秒
             }
-            Thread.Sleep(500);
-        }
+            catch (Exception e)
+            {
+                DebugUtils.LogWarning("【UDP-WS】Recive Udp error: " + e.Message);
+            }
+         }
+
+        DebugUtils.LogWarning($"【UDP-WS】==== <color=red>ReciveUdpMsg End</color> id: {id}");
     }
 
     //使用udp发送消息
@@ -93,6 +114,7 @@ public class ServerWS : MonoBehaviour
             {
                 byte[] bf = Encoding.UTF8.GetBytes(strMsg);
                 mUdpclient.Send(bf, bf.Length, endPoint);
+                DebugUtils.Log($"【UDP-WS】<color=green>UDP up</color>: {strMsg}"); //#seaweed#
             }
         }
         catch (Exception)
@@ -107,14 +129,14 @@ public class ServerWS : MonoBehaviour
         client.Disconnected += OnClientDisconnected;
         client.StartReceiving();
 
-        Debug.Log(string.Format("【UDP-WS】Client {0} Connected...", client.Id));
+        DebugUtils.Log(string.Format("【UDP-WS】Client {0} Connected...", client.Id));
     }
 
     private void OnClientDisconnected(WebSockets.ClientConnection client)
     {
         client.ReceivedTextualData -= OnReceivedTextualData;
         client.Disconnected -= OnClientDisconnected;
-        Debug.Log(string.Format("【UDP-WS】Client {0} Disconnected...", client.Id));
+        DebugUtils.Log(string.Format("【UDP-WS】Client {0} Disconnected...", client.Id));
         EventCenter.Instance.EventTrigger(EventHandle.PLAYER_DISCONNECT, client);
     }
 
@@ -135,7 +157,7 @@ public class ServerWS : MonoBehaviour
     public void SendToClient(WebSockets.ClientConnection client,string msg)
     {
         client.Send(msg);
-        OnDebug(msg, false);
+        OnDebugUtils(msg, false);
     }
 
     public void SendToAllClient(string msg)
@@ -143,7 +165,7 @@ public class ServerWS : MonoBehaviour
         if(mServer != null)
         {
             mServer.SendToAllClient(msg);
-            OnDebug(msg, false);
+            OnDebugUtils(msg, false);
         }
     }
 
@@ -164,7 +186,7 @@ public class ServerWS : MonoBehaviour
         StopServer();
     }
 
-    public void OnDebug(string strMsg, bool C2S = true)
+    public void OnDebugUtils(string strMsg, bool C2S = true)
     {
         try
         {
@@ -173,7 +195,7 @@ public class ServerWS : MonoBehaviour
                $"{Enum.GetName(typeof(C2S_CMD), (C2S_CMD)(int.Parse(cmdValue)))} -" :
                 $"{Enum.GetName(typeof(S2C_CMD), (S2C_CMD)(int.Parse(cmdValue)))} -";
 
-            Debug.LogWarning($"【UDP-WS】WS/{rpcName} -  {strMsg}");
+            DebugUtils.LogWarning($"【UDP-WS】WS/{rpcName} -  {strMsg}");
         }
         catch (Exception ex) { }
     }

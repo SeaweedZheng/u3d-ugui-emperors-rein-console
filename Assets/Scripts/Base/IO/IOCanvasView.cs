@@ -134,6 +134,8 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
         arrowDown.OnPointerDownEvent.AddListener(OnArrowDownPointerDown);
         arrowDown.OnPointerUpEvent.AddListener(OnArrowDownPointerUp);
+
+
     }
 
     private void OnEnable()

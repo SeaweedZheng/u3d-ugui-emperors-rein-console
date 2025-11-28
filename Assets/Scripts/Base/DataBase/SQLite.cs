@@ -5,7 +5,7 @@ using System.Threading;
 using Newtonsoft.Json;
 using System.Net.Sockets;
 using System.Net;
-using System.Text;
+using System;
 using SBoxApi;
 //各平台下数据库存储的绝对路径(通用)
 //PC：sql = new SQLiteHelper("data source=" + Application.dataPath + "/Fire_Line.db");
@@ -24,7 +24,7 @@ using SBoxApi;
 //能够将这个数据库放置在StreamingAssets文件夹下然后再复制到
 //Application.persistentDataPath + "/Fire_Line.db"路径就可以
 
-public class SQLite : BaseManager<SQLite>
+public partial class SQLite : BaseManager<SQLite>
 {
     SQLiteHelper sql;
     string dbPath;
@@ -38,6 +38,8 @@ public class SQLite : BaseManager<SQLite>
 #elif UNITY_ANDROID//ANDROID平台
         dbPath = Application.persistentDataPath + "/game_db.db";
 #endif
+
+        Debug.Log($"sql dbPath= {dbPath}");
         InitSqlConnection();
         CreateDefaultTable();
     }
@@ -48,6 +50,7 @@ public class SQLite : BaseManager<SQLite>
         CreatBetTable();
         CreatWinRecordTable();
         CreatPlayerData();
+        CreatPlayerPrefsTable();
 
         WriteBetDataThread = new Thread(new ThreadStart(WriteBetData))
         {
@@ -155,6 +158,11 @@ public class SQLite : BaseManager<SQLite>
         sql.CreateTable("player_data", new string[] { "clientId", "logicId", "gameType", "macId" },
             new string[] { "INTEGER", "INTEGER", "INTEGER", "INTEGER" });
     }
+
+
+
+
+
 
     public Dictionary<long, PlayerIdData> LoadPlayerData()
     {
@@ -470,4 +478,103 @@ public class PlayerIdData
     public int logicId;
     public int gameType;
     public int macId;
+}
+
+
+/// <summary>
+/// PlayerPrefs
+/// </summary>
+public partial class SQLite
+{
+    const string TAB_PLAYER_PREFS = "player_prefs";
+    private void CreatPlayerPrefsTable()
+    {
+        sql.CreateTable(TAB_PLAYER_PREFS, new string[] { "key", "value", },
+            new string[] { "TEXT", "TEXT", });
+    }
+
+
+    public int GetInit(string key ,int defaultValue)
+    {
+        SqliteDataReader reader = sql.ExecuteQuery($"SELECT * FROM {TAB_PLAYER_PREFS} where key = '{key}'");
+
+        while (reader.Read())
+        {
+            string value = reader.GetString(reader.GetOrdinal("value"));
+            try
+            {
+                return int.Parse(value);
+            }
+            catch (Exception e)
+            {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+    public void SetInit(string key, int value) => SetKV(key, value);
+
+    public float GetFloat(string key, float defaultValue)
+    {
+        SqliteDataReader reader = sql.ExecuteQuery($"SELECT * FROM {TAB_PLAYER_PREFS} where key = '{key}'");
+
+        while (reader.Read())
+        {
+            string value = reader.GetString(reader.GetOrdinal("value"));
+            try
+            {
+                return float.Parse(value);
+            }
+            catch (Exception e)
+            {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+    public void SetFloat(string key, float value) => SetKV(key, value);
+
+    public string GetString(string key, string defaultValue)
+    {
+        SqliteDataReader reader = sql.ExecuteQuery($"SELECT * FROM {TAB_PLAYER_PREFS} where key = '{key}'");
+
+        while (reader.Read())
+        {
+            string value = reader.GetString(reader.GetOrdinal("value"));
+            try
+            {
+                return value;
+            }
+            catch (Exception e)
+            {
+                return defaultValue;
+            }
+        }
+        return defaultValue;
+    }
+
+    public void SetString(string key, string value) => SetKV(key, value);
+    void SetKV(string key, object value)
+    {
+        int count = 0;
+        string sqlStr = $"SELECT COUNT(*) FROM {TAB_PLAYER_PREFS} where key = '{key}'";
+        //Debug.Log($"++++++++  sql = {sqlStr}");
+        SqliteDataReader reader = sql.ExecuteQuery(sqlStr);
+        while (reader.Read())
+            count = reader.GetInt32(reader.GetOrdinal("COUNT(*)"));
+
+        if (count == 0)
+        {
+            InsertValues(TAB_PLAYER_PREFS, new string[] { $"'{key}'", $"'{value}'" });
+        }
+        else
+        {
+            string[] saveName = new string[] { "value" };
+            string[] saveValue = new string[] { $"'{value}'" };
+            string[] whereName = new string[] { "key" };
+            string[] operations = new string[] { "=" };
+            string[] whereValue = new string[] { $"'{key}'" };
+            UpdataData(TAB_PLAYER_PREFS, saveName, saveValue, whereName, operations, whereValue);
+        }
+    }
 }

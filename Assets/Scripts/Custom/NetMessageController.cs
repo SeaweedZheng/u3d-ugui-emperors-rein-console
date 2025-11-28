@@ -23,6 +23,12 @@ public class NetMessageController : BaseManager<NetMessageController>
         EventCenter.Instance.AddEventListener<SBoxConfData>(SBoxEventHandle.SBOX_READ_CONF, OnClinetReadConfR);
         EventCenter.Instance.AddEventListener<SBoxApi.SBoxJackpotData>(SBoxEventHandle.SBOX_JACKPOT_BET_HOST, OnSBoxJackpotData);
 
+        if (!StartUpConfigHelper.isRelease)
+        {
+            EventCenter.Instance.AddEventListener(GlobalEvent.TEST_HIT_JP1, OnTestHitJP1);
+            EventCenter.Instance.AddEventListener(GlobalEvent.TEST_HIT_JP2, OnTestHitJP2);
+        }
+
         SBoxIdea.ReadConf();
     }
 
@@ -33,12 +39,28 @@ public class NetMessageController : BaseManager<NetMessageController>
         EventCenter.Instance.RemoveEventListener<ClientConnection>(EventHandle.PLAYER_DISCONNECT, OnPlayerDisconnect);
         EventCenter.Instance.RemoveEventListener<SBoxConfData>(SBoxEventHandle.SBOX_READ_CONF, OnClinetReadConfR);
         EventCenter.Instance.RemoveEventListener<SBoxApi.SBoxJackpotData>(SBoxEventHandle.SBOX_JACKPOT_BET_HOST, OnSBoxJackpotData); //彩金押注结果返回
+
+        EventCenter.Instance.RemoveEventListener(GlobalEvent.TEST_HIT_JP1, OnTestHitJP1);
+        EventCenter.Instance.RemoveEventListener(GlobalEvent.TEST_HIT_JP2, OnTestHitJP2);
     }
 
 
     /// <summary> 彩金押注结果-响应队列 </summary>
     Dictionary<long, Action<SBoxApi.SBoxJackpotData>> funcJackpotDataDic = new Dictionary<long, Action<SBoxJackpotData>>();
 
+
+
+
+    bool isTestHitJP1 = false;
+    bool isTestHitJP2 = false;
+    void OnTestHitJP1()
+    {
+        isTestHitJP1 = true;
+    }
+    void OnTestHitJP2()
+    {
+        isTestHitJP2 = true;
+    }
 
 
 
@@ -62,6 +84,40 @@ public class NetMessageController : BaseManager<NetMessageController>
     void OnSBoxJackpotData(SBoxApi.SBoxJackpotData data)
     {
         Debug.LogWarning($"当前值：curSBoxJackpotData = {JsonConvert.SerializeObject(SBoxIdea.curSBoxJackpotData)}");
+
+        //"{\"sboxJackpotData\":{\"result\":0,\"MachineId\":98587801,\"SeatId\":44,\"ScoreRate\":1000,\"JpPercent\":1000,\"Lottery\":[0,0,0,0],\"Jackpotlottery\":[0,0,0,0],\"JackpotOut\":[350530,225407,0,0],\"JackpotOld\":[0,0,0,0]},\"seqId\":46,\"code\":0,\"msg\":\"\"}"
+        if (isTestHitJP1 || isTestHitJP2)
+        {
+            if (data.JackpotOld == null || data.JackpotOld.Length < 4)
+                data.JackpotOld = new int[4] { 0, 0, 0, 0 };
+
+            if (data.Jackpotlottery == null || data.Jackpotlottery.Length < 4)
+                data.Jackpotlottery = new int[4] { 0, 0, 0, 0 };
+
+            if (data.Lottery == null || data.Lottery.Length < 4)
+                data.Lottery = new int[4] { 0, 0, 0, 0 };
+
+            // if (data.JackpotOut == null || data.JackpotOut.Length < 4) data.JackpotOut = new int[4] { 0, 0, 0, 0 };
+        }
+
+        if (isTestHitJP1)
+        {
+            data.Lottery[0] = 1;
+            data.Jackpotlottery[0] = 200 * 100;
+            data.JackpotOld[0] = data.JackpotOut[0];
+            data.JackpotOut[0] = data.JackpotOut[0] - data.Jackpotlottery[0];
+        }
+        
+        if (isTestHitJP2)
+        {
+            data.Lottery[1] = 1;
+            data.Jackpotlottery[1] = 100 * 100;
+            data.JackpotOld[1] = data.JackpotOut[1];
+            data.JackpotOut[1] = data.JackpotOut[1] - data.Jackpotlottery[1];
+        }    
+        isTestHitJP1 = false;
+        isTestHitJP2 = false;
+      
 
         foreach (KeyValuePair<long, Action<SBoxApi.SBoxJackpotData>> item in funcJackpotDataDic)
         {
@@ -367,9 +423,6 @@ public class NetMessageController : BaseManager<NetMessageController>
     /// <param name="client"></param>
     private void OnJackBet(MsgInfo info, ClientConnection client)
     {
-        if (true)
-        {
-
             MsgInfo res;
 
 
@@ -445,34 +498,6 @@ public class NetMessageController : BaseManager<NetMessageController>
 
             };
             EventCenter.Instance.EventTrigger(EventHandle.JACKPOT_BET, sBoxJackpot);
-
-        }
-        else
-        {
-            var jackBetInfoList = JsonConvert.DeserializeObject<List<JackBetInfo>>(info.jsonData);
-            for (int i = 0; i < jackBetInfoList.Count; i++)
-            {
-                var jackBetInfo = jackBetInfoList[i];
-                long clientId = long.Parse(jackBetInfo.gameType.ToString() + info.id.ToString());
-                Player player = PlayerMgr.Instance.GetPlayer(clientId);
-                if (player == null)
-                {
-                    Debug.LogError($"OnPlayerJackBet: Player not found for clientId: {clientId}");
-                    return;
-                }
-                SBoxJackpotBet sBoxJackpot = new SBoxJackpotBet
-                {
-                    MachineId = player.LogicId,
-                    SeatId = jackBetInfo.seat,
-                    Bet = jackBetInfo.bet,
-                    BetPercent = jackBetInfo.betPercent,
-                    ScoreRate = jackBetInfo.scoreRate,
-                    JpPercent = 1000,
-                };
-                EventCenter.Instance.EventTrigger(EventHandle.JACKPOT_BET, sBoxJackpot);
-                //ReSendWinJackpot(player, jackBetInfo.seat);
-            }
-        }
 
     }
 

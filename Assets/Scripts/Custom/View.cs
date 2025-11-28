@@ -19,6 +19,12 @@ public class View : MonoBehaviour
 
     public void Start()
     {
+
+
+        // 显示信息
+        Debug.Log($"包信息：isRelease:{StartUpConfigHelper.isRelease}");
+
+        // 创建工具
     }
 
 }

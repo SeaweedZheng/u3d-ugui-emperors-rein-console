@@ -1,6 +1,5 @@
 using Newtonsoft.Json;
 using System;
-using System.Collections;
 using System.Net;
 using System.Net.Sockets;
 using System.Text;
@@ -48,107 +47,251 @@ public class ClientWS : MonoSingleton<ClientWS>
 
     public void StartUdp(int broadcastPort)
     {
+        DebugUtils.Log($"【UDP-WS】StartUdp;  broadcastPort:{broadcastPort}");
 
-        Debug.Log($"【UDP-WS】StartClinet;  broadcastPort:{broadcastPort}");
-
+        // udp初始化
         mBroadcastPort = broadcastPort;
         mUdpclient = new UdpClient(new IPEndPoint(IPAddress.Parse(Utils.LocalIP()), 0));
         endpoint = new IPEndPoint(IPAddress.Broadcast, broadcastPort);
         IsStop = false;
 
+
+        /*#seaweed#
+        // 循环监听udp数据
         RcvThread = new Thread(new ThreadStart(ReciveUdpMsg))
         {
-            IsBackground = true
+            IsBackground = true 
         };
         RcvThread.Start();
+        */
 
+        // 开启子线程，获取udp数据
+        StartThreadReciveUdpMsg();
+
+
+        checkSeverIPCount = 0;
+        // 定时走udp请求服务器的"IP"和"端口"
         if (checkSrvTimer != null)
         {
             checkSrvTimer.Resume();
         }
         else
         {
-            checkSrvTimer = MyTimer.LoopAction(3.0f, CheckHostServerInfo);
+            // 循环走udp请求服务器的ws地址和端口
+            checkSrvTimer = MyTimer.LoopAction(4.0f, CheckHostServerInfo); //3f
         }
 
     }
 
+
+    #region 新增
+
+    void ClearAll()
+    {
+        if (checkSrvTimer != null)
+        {
+            checkSrvTimer.Cancel();
+            checkSrvTimer = null;
+        }
+
+        _ctsUdpRcv?.Cancel();
+
+        mUdpclient?.Close();
+
+        checkSeverIPCount = 0;
+        ReceiveUdpErrorCount = 0;
+    }
+
+    public void RestartUdp()
+    {
+        ClearAll();
+        StartUdp(mBroadcastPort);
+    }
+
+    #endregion
+
+
+    /// <summary>
+    /// 恢复线程 恢复定时器
+    /// </summary>
     public void Reconnect()
     {
+
+        DebugUtils.Log("【UDP-WS】Reconnect");
+
         //mUdpclient.Close();
         //mUdpclient = new UdpClient(new IPEndPoint(IPAddress.Parse(Utils.LocalIP()), 0));
         //endpoint = new IPEndPoint(IPAddress.Broadcast, mBroadcastPort);
 #pragma warning disable CS0618 // Type or member is obsolete
-        RcvThread?.Resume();
+        /*#seaweed#
+        RcvThread?.Resume(); // 恢复线程监听udp信息
+        */
 #pragma warning restore CS0618 // Type or member is obsolete
-        checkSrvTimer?.Resume();
+
+
+        StartThreadReciveUdpMsg();
+        checkSrvTimer?.Resume(); //恢复定时器，循环发送udp或连接websocket
+
     }
 
-    private void ReciveUdpMsg()
+    int recriveId = 0;
+
+    /// <summary> 连线报错次数 </summary>
+    long ReceiveUdpErrorCount = 0;
+
+    const int MAX_RECEIVE_UDP_ERROR_COUNT = 10;
+    /// <summary>
+    /// 接受到主机udp数据
+    /// </summary>
+    private void ReciveUdpMsg(CancellationToken cancellationToken) //#seaweed
     {
-        while (!IsStop && mUdpclient != null)
+
+        if (++recriveId > 1000)
+            recriveId = 0;
+        int id = recriveId;
+
+        ReceiveUdpErrorCount = 0;
+        DebugUtils.LogWarning($"【UDP-WS】==== <color=red>ReciveUdpMsg Start</color> id: {id}");
+
+        while (!IsStop && mUdpclient != null && !cancellationToken.IsCancellationRequested)
         {
             try
             {
-                byte[] buf = mUdpclient.Receive(ref endpoint);
+                byte[] buf = mUdpclient.Receive(ref endpoint);  // 这里会一直卡主,直到读取到数据。
                 if (buf != null)
                 {
                     string msg = Encoding.UTF8.GetString(buf);
-
-                    Debug.Log($"【UDP-WS】ReciveUdpMsg(S2C): {msg}");
+                    DebugUtils.Log($"【UDP-WS】<color=yellow>UDP down</color>: {msg} ");
 
                     if (!string.IsNullOrEmpty(msg) && !GetHost)
                     {
+                        DebugUtils.Log($"【UDP-WS】UDP/S2C <color=green>GetHost</color>");
                         serverinfo = JsonConvert.DeserializeObject<ServerInfo>(msg);
                         GetHost = true;
                     }
                 }
+                ReceiveUdpErrorCount = 0;
             }
             catch (Exception e)
             {
-                Debug.Log("【UDP-WS】" + e.Message);
+                DebugUtils.LogWarning("【UDP-WS】Recive Udp error: " + e.Message);
+                if (++ReceiveUdpErrorCount > MAX_RECEIVE_UDP_ERROR_COUNT)
+                {
+                    // 【bug】针对问题：“远程主机强迫关闭了一个现有的连接”。
+                    DebugUtils.LogError($"【UDP-WS】 持续try-catch失败！！ err count: {ReceiveUdpErrorCount}");
+
+                    Loom.QueueOnMainThread((obj) =>
+                    {
+                        RestartUdp();  // 一直报错就重启。
+                    }, null);
+                }
             }
         }
-        Debug.LogWarning("【UDP-WS】ReciveUdpMsg OUT");
+        DebugUtils.LogWarning($"【UDP-WS】==== <color=red>ReciveUdpMsg End</color> id: {id}");
     }
+
+
+    //解决子线程失效的问题
+    CancellationTokenSource _ctsUdpRcv;
+    void StartThreadReciveUdpMsg()
+    {
+        // 关闭上个线程
+        _ctsUdpRcv?.Cancel();
+
+
+        // 初始化取消标记源
+        _ctsUdpRcv = new CancellationTokenSource();
+        CancellationToken cancellationToken = _ctsUdpRcv.Token;
+        // 循环监听udp数据
+        RcvThread = new Thread(() => ReciveUdpMsg(cancellationToken))
+        {
+            IsBackground = true
+        };
+        RcvThread.Start();
+    }
+
+
+
+
+
 
     //使用udp发送消息
     public void SendUpdMsg(string strMsg)
     {
+
+        //#seaweed# 网络重连
+
         try
         {
             if (mUdpclient != null)
             {
                 byte[] bf = Encoding.UTF8.GetBytes(strMsg);
                 mUdpclient.Send(bf, bf.Length, endpoint);
+                DebugUtils.Log($"【UDP-WS】<color=green>UDP up</color>: {strMsg} ");
             }
         }
-        catch (Exception)
+        catch (Exception ex)
         {
 
-            throw;
+            throw ex;
         }
     }
 
 
+
+
+    int checkSeverIPCount = 0;
+
+    const int MAX_CHECK_SEVER_IP_FAIL_COUNT = 20;
+    /// <summary>
+    /// 走udp定时请求服务器"IP"和"端口"
+    /// </summary>
+    /// <param name="loopTimes"></param>
     void CheckHostServerInfo(int loopTimes)
     {
-        if (!IsConnected && serverinfo != null)
+
+        //DebugUtils.Log($"【UDP-WS】 IsConnected: {IsConnected} ; serverinfo is null: {serverinfo == null}  ;  GetHost：{GetHost}");
+
+        if (!IsConnected && serverinfo != null) // 没有链接websocket重新连接
         {
-            Debug.Log("【UDP-WS】StopUdp ");
+            checkSeverIPCount = 0;
+            DebugUtils.Log("【UDP-WS】<color=green>Init Socket</color> ");
+            // 获取到端口和地址，建立ws连接
             InitSocket(serverinfo.IP, serverinfo.port);
-            StopUdp();
+            StopUdp();  // 【bug】如果一开始彩金已连接，之后彩金断开重连。能知道彩金的"IP"和"端口"（此时udp已经被关闭！）
         }
-        else if (serverinfo == null)
+        else if (serverinfo == null) // 走udp,获取服务器ip和端口
         {
-            ServerInfo clientInfo = new ServerInfo
+            string msg = "";
+
+            //走udp获取服务数据，多次没收到则重连起udp
+            if (++checkSeverIPCount > MAX_CHECK_SEVER_IP_FAIL_COUNT)
             {
-                IP = Utils.LocalIP(),
-                port = mBroadcastPort
-            };
-            string msg = JsonConvert.SerializeObject(clientInfo);
-            SendUpdMsg(msg);
-            Debug.Log($"【UDP-WS】UDP/C2S : {msg} ");
+                checkSeverIPCount = 0;
+                Loom.QueueOnMainThread((obj) =>
+                {
+                    RestartUdp();  // 一直报错就重启。
+                }, null);
+                return;
+            }
+
+            try
+            {
+                ServerInfo clientInfo = new ServerInfo
+                {
+                    IP = Utils.LocalIP(), // 发送本机ip
+                    port = mBroadcastPort
+                };
+                msg = JsonConvert.SerializeObject(clientInfo);
+                SendUpdMsg(msg);
+
+                // 【bug】 每次彩金后台断电重启更改了ip地址。这里会一直走udp获取服务器ip，但是一直没有返回数据（服务器那边没收到udp请求数据）。需要重启下udp
+            }
+            catch (Exception ex)
+            {
+                DebugUtils.LogWarning($"【UDP-WS】UDP get sever WS(IP/Port fail)  : {msg}  ");
+                // 这里可能因为断网导致一直报错。 直接过滤掉
+            }
         }
     }
 
@@ -159,9 +302,18 @@ public class ClientWS : MonoSingleton<ClientWS>
 #pragma warning restore CS0618 // 类型或成员已过时
     }
 
+
+    /// <summary>
+    /// 连接websocket
+    /// </summary>
+    /// <param name="server_ip"></param>
+    /// <param name="port"></param>
+    /// <remarks>
+    /// * 如果断线，链接失败，回重连？？
+    /// </remarks>
     public void InitSocket(string server_ip, int port)
-    {        
-        Debug.Log("【UDP-WS】InitSocket----> ip = " + server_ip + " and port = " + port);
+    {
+        DebugUtils.Log("【UDP-WS】InitSocket----> ip = " + server_ip + " and port = " + port);
         if (mSocket != null)
         {
             mSocket.OnOpen -= SocketOnOpen;
@@ -176,8 +328,8 @@ public class ClientWS : MonoSingleton<ClientWS>
         {
             mAddress = string.Format("ws://{0}:{1}", server_ip, port);
             mSocket = new WebSocket(mAddress);
-            mSocket.OnOpen += SocketOnOpen;
-            mSocket.OnMessage += SocketOnMessage;
+            mSocket.OnOpen += SocketOnOpen;  // 建立连接
+            mSocket.OnMessage += SocketOnMessage;   //获取数据
             mSocket.OnClose += SocketOnClose;
             mSocket.OnError += SocketOnError;
             //mSocket.BinaryType = 
@@ -187,12 +339,16 @@ public class ClientWS : MonoSingleton<ClientWS>
             LastHeartHeatTime = Time.time;
             if (heartHeatTimer == null)
             {
-                heartHeatTimer = MyTimer.LoopAction(3.0f, ClientHeartHeat);
+                heartHeatTimer = MyTimer.LoopAction(2.8f, ClientHeartHeat);
+            }
+            else
+            {
+                heartHeatTimer.Resume(); //#seaweed# 新加
             }
         }
         catch (System.Exception ex)
         {
-            Debug.Log(ex.Message);
+            DebugUtils.Log(ex.Message);
         }
     }
 
@@ -222,11 +378,15 @@ public class ClientWS : MonoSingleton<ClientWS>
         catch (Exception e)
         {
             //mClientSocket.Close();
-            Debug.Log("【UDP-WS】发送失败 " + e.Message);
+            DebugUtils.Log("【UDP-WS】发送失败  " + e.Message);
         }
     }
 
-    //每3秒发一次心跳
+
+    /// <summary>
+    /// 走websocket 给服务器发送心跳
+    /// </summary>
+    /// <param name="ck"></param>
     void ClientHeartHeat(int ck)
     {
         if (canHeart)
@@ -237,32 +397,43 @@ public class ClientWS : MonoSingleton<ClientWS>
                 GetHost = false;
                 IsConnected = false;
                 serverinfo = null;
-                //#seaweed#PopTips.Instance.ShowSystemTips(Utils.GetLanguage("Disconnected"), -1);
+                DebugUtils.LogWarning("【UDP-WS】Heartbeat Lost");
                 Reconnect();
-                //StartUdp(mBroadcastPort);
+
+                heartHeatTimer.Pause(); //#seaweed# 新加 (方法1： 可以用)
+
+                //heartHeatTimer.Cancel(); //#seaweed# 新加(方法2： 可以用)
+                //heartHeatTimer = null;
             }
-            SendHeartHeat();
+            else //#seaweed# 新加
+            {
+                SendHeartHeat();
+            }
         }
     }
 
     private void SocketOnOpen(object sender, OpenEventArgs e)
     {
-        Debug.Log(string.Format("【UDP-WS】Connected: {0}", mAddress));
+        DebugUtils.Log(string.Format("【UDP-WS】Connected: {0}", mAddress));
         IsConnected = true;
         canHeart = true;
         SendHeartHeat();
-        PopTips.Instance.ShowSystemTips("Connected");
+        //## PopTips.Instance.ShowSystemTips("Connected");
+        //DebugUtils.LogWarning("【UDP-WS】Connected");
+
+        // 这里进行登录
+        //NetClineBiz.Instance.CheckLoginJpConsole();
     }
 
     private void SocketOnMessage(object sender, MessageEventArgs e)
     {
         if (e.IsBinary)
         {
-            Debug.Log(string.Format("【UDP-WS】Receive Bytes ({1}): {0}", e.Data, e.RawData.Length));
+            DebugUtils.Log(string.Format("【UDP-WS】Receive Bytes ({1}): {0}", e.Data, e.RawData.Length));
         }
         else if (e.IsText)
         {
-            //Debug.Log(string.Format("Receive: {0}", e.Data));
+            //DebugUtils.Log(string.Format("Receive: {0}", e.Data));
             //TODO 添加消息处理
             Messenger.Broadcast<byte[]>(MessageName.Event_NetworkClientData, Encoding.UTF8.GetBytes(e.Data));
         }
@@ -270,26 +441,35 @@ public class ClientWS : MonoSingleton<ClientWS>
 
     private void SocketOnClose(object sender, CloseEventArgs e)
     {
-        Debug.LogError("【UDP-WS】call SocketOnClose");
-        Debug.Log(string.Format("【UDP-WS】Closed: StatusCode: {0}, Reason: {1}", e.StatusCode, e.Reason));
-        PopTips.Instance.ShowSystemTips(Utils.GetLanguage("Disconnected"), -1);
+        DebugUtils.Log(string.Format("【UDP-WS】WS/ On Closed; StatusCode: {0}, Reason: {1}", e.StatusCode, e.Reason));
         serverinfo = null;
         IsConnected = false;
+        GetHost = false;
+
+
+        //NetClineBiz.Instance.Clear();
+
         Reconnect();
+
+
     }
 
     private void SocketOnError(object sender, ErrorEventArgs e)
     {
-        Debug.LogError("【UDP-WS】call SocketOnError");
-        Debug.Log(string.Format("【UDP-WS】Error: {0}", e.Message));
-        PopTips.Instance.ShowSystemTips(Utils.GetLanguage("Disconnected"), -1);
+        DebugUtils.Log(string.Format("【UDP-WS】WS/ On Error; {0}", e.Message));
         serverinfo = null;
         IsConnected = false;
+        GetHost = false;
+
+        //NetClineBiz.Instance.Clear();
+
         Reconnect();
     }
 
     public void CloseSocket()
     {
+        DebugUtils.Log("【UDP-WS】CloseSocket");
+
         serverinfo = null;
         GetHost = false;
         IsConnected = false;
@@ -304,7 +484,7 @@ public class ClientWS : MonoSingleton<ClientWS>
             mSocket.CloseAsync();
             mSocket = null;
         }
-        Debug.Log("CloseSocket");
+
     }
 
     private new void OnDestroy()
@@ -335,10 +515,11 @@ public class ClientWS : MonoSingleton<ClientWS>
                $"{Enum.GetName(typeof(C2S_CMD), (C2S_CMD)(int.Parse(cmdValue)))} -" :
                 $"{Enum.GetName(typeof(S2C_CMD), (S2C_CMD)(int.Parse(cmdValue)))} -";
 
-            Debug.LogWarning($"【UDP-WS】WS/{rpcName} -  {strMsg}");
+            DebugUtils.LogWarning($"【UDP-WS】WS/{rpcName} -  {strMsg}");
         }
         catch (Exception ex) { }
     }
+
 
 
 

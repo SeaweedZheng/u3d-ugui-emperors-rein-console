@@ -51,7 +51,7 @@ public class Load : MonoBehaviour
         }
         else
         {
-            SBoxInit.Instance.Init("192.168.3.225", OnInitSBox);
+            SBoxInit.Instance.Init("192.168.3.87", OnInitSBox);
         }
     }
     private GameObject IOCanvasViewObj;

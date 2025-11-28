@@ -3,12 +3,21 @@ using UnityEngine;
 
 public static class StartUpConfig
 {
+    /*
+    static bool _isMachine = false;
+    public static bool isMachine
+    {
+        get => _isMachine;
+    }*/
 
-    // 测试服
-    //public const string url = "http://8.138.140.180:8124/EmperorsRein200/ConsoleTest";
 
-    // 正式服
-    public const string url = "http://chresouce.oss-cn-guangzhou.aliyuncs.com/luomajp";
+    /// <summary> 是否是正式包 (下个版本加)</summary>
+    public static bool isRelease => false; 
+    
+    public static string url => isRelease? "http://chresouce.oss-cn-guangzhou.aliyuncs.com/luomajp" : // 正式服
+        "http://chresouce.oss-cn-guangzhou.aliyuncs.com/luomajp/Debug"; // 测试服
+
+
 
 
     public static Dictionary<string, AssetBundle> bundleDic = new Dictionary<string, AssetBundle>();
@@ -59,10 +68,5 @@ public static class StartUpConfig
 
 
 
-    static bool _isMachine = false;
-    public static bool isMachine
-    {
-        get => _isMachine;
-    }
 
 }
