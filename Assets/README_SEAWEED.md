@@ -21,7 +21,16 @@
 
 Assets/Scripts/Custom
 
-# 打包
+
+# ====打包流程
+
+1. U3d > 菜单栏HybridCLR > Generate > LinkXml  (打包脚本)
+2. U3d > 菜单栏Tools >Copy Dll 
+3. U3d > 菜单栏Tools >Build AssetBundles
+4. 修改版本号： "Assets/StreamingAssets/Version.txt"
+5. 导出安卓工程、修改安卓版本号、打apk、进行签名
+
+# ====打包相关信息
 打包后的资源路劲： Assets/StreamingAssets/AssetBundles
 打包后的代码路劲（包含AOT）： Assets/StreamingAssets/Lib
 
@@ -258,6 +267,19 @@ void OnRefreshIOCanvas() ： 保存桉树修改
 
  -- IOState State
  
+ 
+## 【接口】确定按钮，保留修改
+
+IOCanvasView.SaveConfig()
+
+
+## 【接口】实际值同步给 tempCfgData
+
+IOCanvasModel.SetTempCfgData()
+
+tempCfgData属性： 用来存放后台修改界面，所有参数的修改值
+
+ 
 ### IOState ： 【枚举】 ： 后台那个界面：
   State = IOState.Params; -- 参数设置界面
 
@@ -271,9 +293,21 @@ void OnRefreshIOCanvas() ： 保存桉树修改
 		  
 		  IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId
 		  
+## 如何查看页面显示的内容：
+
+通过 Utils.GetLanguage() 接口的应用，反查出“界面内容”在哪里编写。
+
+
+# ====页面修改
+
+## 针对多少分1票、1分多少票
+
+类：IOTicketRatioSection    显示：2分/1票
+
+
+
 		  
-		  
-# 其他		  
+# ====其他		  
 
 
 

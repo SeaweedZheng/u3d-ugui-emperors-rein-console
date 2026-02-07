@@ -1,3 +1,4 @@
+using Newtonsoft.Json;
 using SBoxApi;
 using System;
 using System.Collections;
@@ -226,7 +227,11 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                     break;
                 */
                 case (int)IOParams.CoinRatio:
-                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.CoinValue;
+                    // 只有1币多少分
+                    //(selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.CoinValue;
+                    //break;
+
+                    (selection as IOCoinRatioSection).SetCurIndex();
                     break;
                 case (int)IOParams.TicketRatio:
                     (selection as IOTicketRatioSection).SetCurIndex();
@@ -471,6 +476,10 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
             SelectedSectionUpAndRight(true);
     }
 
+    /// <summary>
+    /// 长按加函数
+    /// </summary>
+    /// <param name="changeSkillValue"></param>
     private void SelectedSectionUpAndRight(bool changeSkillValue)
     {
         int temp = 0;
@@ -498,8 +507,29 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 (int offset) => { ValueChange(true, ref IOCanvasModel.Instance.tempCfgData.LimitBetsWins, IOCanvasModel.MIN_LIMIT_BETS_WINS, IOCanvasModel.MAX_LIMIT_BETS_WINS, offset); }, deffaultOffset: 10));
                 break;
             case IOSectionState.CoinRatio:
+
+                // 只有1币多少分
+                //pressCorutine = StartCoroutine(PressEnumerator(
+                //() => { ValueChange(true, ref IOCanvasModel.Instance.tempCfgData.CoinValue, IOCanvasModel.MIN_COIN_RATIO, IOCanvasModel.MAX_COIN_RATIO); }));
+                //break;
+
+                // 1币多少分、多少币1分
                 pressCorutine = StartCoroutine(PressEnumerator(
-                () => { ValueChange(true, ref IOCanvasModel.Instance.tempCfgData.CoinValue, IOCanvasModel.MIN_COIN_RATIO, IOCanvasModel.MAX_COIN_RATIO); }));
+                () => {
+                    if (IOCanvasModel.Instance.tempCfgData.CoinValue > 1)
+                    {
+                        IOCanvasModel.Instance.tempCfgData.CoinValue = IOCanvasModel.Instance.tempCfgData.CoinValue + 1 > IOCanvasModel.MAX_COIN_PER_SCORE ?
+                        IOCanvasModel.Instance.tempCfgData.CoinValue : IOCanvasModel.Instance.tempCfgData.CoinValue + 1;
+                    }
+                    else
+                    {
+                        if (IOCanvasModel.Instance.tempCfgData.ScoreValue - 1 < 1)
+                            IOCanvasModel.Instance.tempCfgData.CoinValue = 2;
+                        else
+                            IOCanvasModel.Instance.tempCfgData.ScoreValue--;
+                    }
+                    (selectSection.baseSection as IOCoinRatioSection).SetCurIndex();
+                }));
                 break;
             case IOSectionState.TicketRatio:
                 pressCorutine = StartCoroutine(PressEnumerator(
@@ -606,6 +636,10 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         }
     }
 
+    /// <summary>
+    /// 长按减函数
+    /// </summary>
+    /// <param name="vertical"></param>
     private void SelectedSectionDownAndLeft(bool vertical)
     {
         int temp = 0;
@@ -634,8 +668,24 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 (int offset) => { ValueChange(false, ref IOCanvasModel.Instance.tempCfgData.LimitBetsWins, IOCanvasModel.MIN_LIMIT_BETS_WINS, IOCanvasModel.MAX_LIMIT_BETS_WINS, offset); }, 10));
                 break;
             case IOSectionState.CoinRatio:
+                // 只有1币多少分
+                // pressCorutine = StartCoroutine(PressEnumerator(
+                // () => { ValueChange(false, ref IOCanvasModel.Instance.tempCfgData.CoinValue, IOCanvasModel.MIN_COIN_RATIO, IOCanvasModel.MAX_COIN_RATIO); }));
+                // break;
+
+                // 1币多少分、多少币1分
                 pressCorutine = StartCoroutine(PressEnumerator(
-                () => { ValueChange(false, ref IOCanvasModel.Instance.tempCfgData.CoinValue, IOCanvasModel.MIN_COIN_RATIO, IOCanvasModel.MAX_COIN_RATIO); }));
+                () => {
+                    if (IOCanvasModel.Instance.tempCfgData.CoinValue > 1)
+                        IOCanvasModel.Instance.tempCfgData.CoinValue--;
+                    else
+                    {
+                        IOCanvasModel.Instance.tempCfgData.ScoreValue =
+                        IOCanvasModel.Instance.tempCfgData.ScoreValue + 1 > IOCanvasModel.MAX_SCORE_PER_COIN ?
+                        IOCanvasModel.MAX_SCORE_PER_COIN : IOCanvasModel.Instance.tempCfgData.ScoreValue + 1;
+                    }
+                    (selectSection.baseSection as IOCoinRatioSection).SetCurIndex();
+                }));
                 break;
             case IOSectionState.TicketRatio:
                 pressCorutine = StartCoroutine(PressEnumerator(
@@ -644,7 +694,8 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                         IOCanvasModel.Instance.tempCfgData.TicketValue--;
                     else
                     {
-                        IOCanvasModel.Instance.tempCfgData.scoreTicket = IOCanvasModel.Instance.tempCfgData.scoreTicket + 1 > IOCanvasModel.MAX_VALUE_TICKET ?
+                        IOCanvasModel.Instance.tempCfgData.scoreTicket = 
+                        IOCanvasModel.Instance.tempCfgData.scoreTicket + 1 > IOCanvasModel.MAX_VALUE_TICKET ?
                         IOCanvasModel.MAX_VALUE_TICKET : IOCanvasModel.Instance.tempCfgData.scoreTicket + 1;
                     }
                     (selectSection.baseSection as IOTicketRatioSection).SetCurIndex();
@@ -805,6 +856,10 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         }
     }
 
+    /// <summary>
+    /// 加减回调函数。
+    /// </summary>
+    /// <param name="isAdd"></param>
     private void KeyUp(bool isAdd)
     {
         //Debug.LogError($"KeyUp isAdd:{isAdd}");
@@ -839,8 +894,44 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                     ValueChange(isAdd, ref IOCanvasModel.Instance.tempCfgData.LimitBetsWins, IOCanvasModel.MIN_LIMIT_BETS_WINS, IOCanvasModel.MAX_LIMIT_BETS_WINS, offset: 10);
                     break;
                 case IOSectionState.CoinRatio:
-                    ValueChange(isAdd, ref IOCanvasModel.Instance.tempCfgData.CoinValue, IOCanvasModel.MIN_COIN_RATIO, IOCanvasModel.MAX_COIN_RATIO);
+
+                    // 只有1币多少分
+                    // ValueChange(isAdd, ref IOCanvasModel.Instance.tempCfgData.CoinValue, IOCanvasModel.MIN_COIN_RATIO, IOCanvasModel.MAX_COIN_RATIO);
+                    // break;
+
+                    // 1币多少分、多少币1分
+                    if (isAdd)
+                    {
+                        if (IOCanvasModel.Instance.tempCfgData.CoinValue > 1)
+                        {
+                            if (IOCanvasModel.Instance.tempCfgData.CoinValue + 1 > IOCanvasModel.MAX_COIN_PER_SCORE)
+                                IOCanvasModel.Instance.tempCfgData.CoinValue = IOCanvasModel.MAX_COIN_PER_SCORE;
+                            else
+                                IOCanvasModel.Instance.tempCfgData.CoinValue++;
+                        }
+                        else
+                        {
+                            if (IOCanvasModel.Instance.tempCfgData.ScoreValue - 1 < 1)
+                                IOCanvasModel.Instance.tempCfgData.CoinValue = 2;
+                            else
+                                IOCanvasModel.Instance.tempCfgData.ScoreValue--;
+                        }
+                    }
+                    else
+                    {
+                        if (IOCanvasModel.Instance.tempCfgData.CoinValue > 1)
+                            IOCanvasModel.Instance.tempCfgData.CoinValue--;
+                        else
+                        {
+                            IOCanvasModel.Instance.tempCfgData.ScoreValue =
+                                IOCanvasModel.Instance.tempCfgData.ScoreValue + 1 > IOCanvasModel.MAX_SCORE_PER_COIN ?
+                            IOCanvasModel.MAX_SCORE_PER_COIN : IOCanvasModel.Instance.tempCfgData.ScoreValue + 1;
+                        }
+                    }
+
+                    (selectSection.baseSection as IOCoinRatioSection).SetCurIndex();
                     break;
+
                 case IOSectionState.TicketRatio:
                     if (isAdd)
                     {
@@ -865,7 +956,8 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                             IOCanvasModel.Instance.tempCfgData.TicketValue--;
                         else
                         {
-                            IOCanvasModel.Instance.tempCfgData.scoreTicket = IOCanvasModel.Instance.tempCfgData.scoreTicket + 1 > IOCanvasModel.MAX_VALUE_TICKET ?
+                            IOCanvasModel.Instance.tempCfgData.scoreTicket = 
+                                IOCanvasModel.Instance.tempCfgData.scoreTicket + 1 > IOCanvasModel.MAX_VALUE_TICKET ?
                             IOCanvasModel.MAX_VALUE_TICKET : IOCanvasModel.Instance.tempCfgData.scoreTicket + 1;
                         }
                     }
@@ -1295,12 +1387,16 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
     private void SaveConfig()
     {
 
-        Debug.LogError("i am here SaveConfig");
+
 
         IOCanvasModel.Instance.tempCfgData.SwitchBetsUnitMin = IOCanvasModel.Instance.switchList[0];
         IOCanvasModel.Instance.tempCfgData.SwitchBetsUnitMid = IOCanvasModel.Instance.switchList[1];
         IOCanvasModel.Instance.tempCfgData.SwitchBetsUnitMax = IOCanvasModel.Instance.switchList[2];
         //SBoxIdea.WaveGameCount(1, IOCanvasModel.Instance.tempWaveGamecout);
+
+        Debug.LogWarning($"i am here SaveConfig  : {JsonConvert.SerializeObject(IOCanvasModel.Instance.tempCfgData)}");
+
+
         SBoxIdea.WriteConf(IOCanvasModel.Instance.tempCfgData);
     }
 

@@ -229,14 +229,14 @@ public class NetMessageController : BaseManager<NetMessageController>
         }
 
 
-        Debug.LogError($"收到玩家登录信息：macId: {loginInfo.macId} ; LoginInfo: {info.jsonData}");
+        //Debug.LogWarning($"【提示】收到玩家登录信息：macId: {loginInfo.macId} ; LoginInfo: {info.jsonData}");
 
 
 
         if (IOCanvasModel.Instance.groupId != loginInfo.groudId)
         {
             // 组号不对
-            Debug.LogError($"组号不对，拒绝登录：macId: {loginInfo.macId} ; LoginInfo: {info.jsonData}");
+            Debug.LogWarning($"组号不对，拒绝登录：macId: {loginInfo.macId} ; LoginInfo: {info.jsonData}");
 
             loginInfoR.code = 1;
             loginInfoR.msg = "组号不对，拒绝登录";
@@ -252,11 +252,11 @@ public class NetMessageController : BaseManager<NetMessageController>
         }
 
 
-        if (IOCanvasModel.Instance.seatIdMacIdMap.ContainsKey(loginInfo.seatId)
-            && IOCanvasModel.Instance.seatIdMacIdMap[loginInfo.seatId] != loginInfo.macId)
+        if (IOCanvasModel.Instance.macIdSeatIdMap.ContainsKey(loginInfo.macId)
+            && IOCanvasModel.Instance.macIdSeatIdMap[loginInfo.macId].seatId !=loginInfo.seatId)
         {
             // 座位号重复
-            Debug.LogError($"座位号重复，拒绝登录：macId: {loginInfo.macId} ; LoginInfo: {info.jsonData}");
+            Debug.LogWarning($"座位号重复，拒绝登录：macId: {loginInfo.macId} ; LoginInfo: {info.jsonData}");
 
             loginInfoR.code = 1;
             loginInfoR.msg = "座位号重复，拒绝登录";
@@ -272,7 +272,13 @@ public class NetMessageController : BaseManager<NetMessageController>
             return;
         }
 
-        IOCanvasModel.Instance.seatIdMacIdMap[loginInfo.seatId] = loginInfo.macId;
+        if (!IOCanvasModel.Instance.macIdSeatIdMap.ContainsKey(loginInfo.macId))
+        {
+            IOCanvasModel.Instance.macIdSeatIdMap.Add(loginInfo.macId, new PlayInfo());
+        }
+        IOCanvasModel.Instance.macIdSeatIdMap[loginInfo.macId].machineId = loginInfo.macId;
+        IOCanvasModel.Instance.macIdSeatIdMap[loginInfo.macId].seatId = loginInfo.seatId;
+        IOCanvasModel.Instance.macIdSeatIdMap[loginInfo.macId].lastHeartbeatTimeS = Time.unscaledTime;
 
 
         Player player = PlayerMgr.Instance.PlayerInsert(loginInfo, client);

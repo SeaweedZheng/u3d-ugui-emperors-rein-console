@@ -146,7 +146,7 @@ namespace SBoxApi
         public int TicketMode;                      // 退票模式，0：即中即退，1：退票
         public int TicketValue;                     // 1票对应几分（彩票比例）
         public int scoreTicket;                     // 1分对应几票
-        public int CoinValue;                       // 投币比例
+        public int CoinValue;                       // 投币比例（1分多少币） //CoinValue
         public int MaxBet;                          // 最大押注
         public int MinBet;                          // 最小押注
         public int CountDown;                       // 例计时
@@ -177,7 +177,8 @@ namespace SBoxApi
         public int NewGameMode;                     // 开始新一轮游戏模式，0：自动开始，1：手动开始
         public int NetJackpot;                      // 是否启用联网彩金 0:关闭 1:开启
         public int JackpotLevel;
-        public int BallValue;						  //球币比例 1球几币	
+        public int BallValue;                         //球币比例 1球几币	
+        public int ScoreValue;						  //投币比例(1币多少分),现在由CoinValue和ScoreValue最终决定给玩家多少分
     }
 
 
@@ -678,6 +679,7 @@ namespace SBoxApi
             sBoxConfData.NetJackpot = sBoxPacket.data[pos++];
             sBoxConfData.JackpotLevel = sBoxPacket.data[pos++];
             sBoxConfData.BallValue = sBoxPacket.data[pos++];
+            sBoxConfData.ScoreValue = sBoxPacket.data[pos++];
             EventCenter.Instance.EventTrigger(SBoxEventHandle.SBOX_READ_CONF, sBoxConfData);
         }
 
@@ -801,6 +803,7 @@ namespace SBoxApi
             sBoxPacket.data[pos++] = sBoxConfData.NetJackpot;
             sBoxPacket.data[pos++] = sBoxConfData.JackpotLevel;
             sBoxPacket.data[pos++] = sBoxConfData.BallValue;
+            sBoxPacket.data[pos++] = sBoxConfData.ScoreValue;
             SBoxIOEvent.AddListener(sBoxPacket.cmd, WriteConfR);
             SBoxIOStream.Write(sBoxPacket);
         }

@@ -80,6 +80,8 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
 
     private void OnReadConfig(SBoxConfData sBoxConfData)
     {
+        Debug.LogWarning($"ReadConfig: {JsonConvert.SerializeObject(sBoxConfData)} ");
+
         if (sBoxConfData.result < 0)
         {
             IOPopTips.Instance.ShowTips(Utils.GetLanguage("ParamsWrong"));

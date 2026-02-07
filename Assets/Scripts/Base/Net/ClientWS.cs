@@ -356,7 +356,7 @@ public class ClientWS : MonoSingleton<ClientWS>
     public void SendHeartHeat()
     {
         MsgInfo cmd = new MsgInfo();
-        cmd.cmd = (int)C2S_CMD.C2S_HeartHeat;
+        cmd.cmd = (int)C2S_CMD.C2S_Heartbeat;
         //cmd.id = Model.Instance.macId;
         SendToServer(JsonConvert.SerializeObject(cmd));
     }

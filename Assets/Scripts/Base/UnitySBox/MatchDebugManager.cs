@@ -92,7 +92,9 @@ public class MatchDebugManager : MonoSingleton<MatchDebugManager>
             udpClient.Close();
             udpClient = null;
         }
-        sendEndPoint = new IPEndPoint(IPAddress.Parse(mMatchIp), 8092);
+        int port = 8092;
+        Debug.Log($"Á´½Ó£º {mMatchIp}:{port}");
+        sendEndPoint = new IPEndPoint(IPAddress.Parse(mMatchIp), port);
         udpClient = new UdpClient();
 
         if (udpReceive != null)

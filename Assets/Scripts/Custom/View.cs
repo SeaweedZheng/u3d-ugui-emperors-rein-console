@@ -13,8 +13,11 @@ public class View : MonoBehaviour
 
     public void OnSettingBtnClick()
     {
-        ResMgr.Instance.LoadAssetBundle("io", "IOCanvas", (obj) =>
-        { IOCanvasObj = Instantiate(obj) as GameObject; });
+        if ( IOCanvasObj != null )
+            IOCanvasObj.SetActive(true);
+        else
+            ResMgr.Instance.LoadAssetBundle("io", "IOCanvas", (obj) =>
+            { IOCanvasObj = Instantiate(obj) as GameObject; });
     }
 
     public void Start()

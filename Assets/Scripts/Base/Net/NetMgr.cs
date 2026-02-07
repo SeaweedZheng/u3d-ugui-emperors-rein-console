@@ -48,7 +48,7 @@ public class NetMgr : MonoSingleton<NetMgr>
 
     public void SetNetAutoConnect(bool Host)
     {
-        Debug.LogError($"call SetNetAutoConnect host={Host}");
+        Debug.LogWarning($"call SetNetAutoConnect host={Host}");
         IsHost = Host;
 
         Debug.Log($"SetNetAutoConnect: broadcastPort = {broadcastPort}");
@@ -106,16 +106,73 @@ public class NetMgr : MonoSingleton<NetMgr>
         }
         catch (System.Exception ex)
         {
-            Debug.Log("JSON : " + ex.Message);
+            DebugUtils.LogError("【UDP-WS】MsgInfo error : " + ex.Message);
         }
         if (info != null)
         {
             switch ((C2S_CMD)info.cmd)
             {
-                case C2S_CMD.C2S_HeartHeat:
-                    info.cmd = (int)S2C_CMD.S2C_HeartHeatR;
-                    info.id = info.id;
-                    SendToClient(data.Client, JsonConvert.SerializeObject(info));
+                case C2S_CMD.C2S_Heartbeat:
+                    MsgInfo infoR = new MsgInfo();
+                    infoR.cmd = (int)S2C_CMD.S2C_HeartbeatR;
+                    infoR.id = info.id;
+
+                    try
+                    {
+                        HeartbeatInfo res = JsonConvert.DeserializeObject<HeartbeatInfo>(info.jsonData);
+
+                        int code = 0;
+                        string msg = "";
+                        if (IOCanvasModel.Instance.macIdSeatIdMap.ContainsKey(res.macId))
+                        {
+
+                            if (res.groupId != IOCanvasModel.Instance.groupId)
+                            {
+                                code = 1;
+                                msg = "组号错误，请从新登录";
+                            }
+                            else if (res.seatId != IOCanvasModel.Instance.macIdSeatIdMap[res.macId].seatId)
+                            {
+                                code = 1;
+                                msg = "座位号错误，请从新登录";
+                            }
+                            else if (Time.unscaledTime - IOCanvasModel.Instance.macIdSeatIdMap[res.macId].lastHeartbeatTimeS  > 15)
+                            {
+                                code = 1;
+                                msg = "心跳超时";
+                            }
+                            else
+                            {
+                                IOCanvasModel.Instance.macIdSeatIdMap[res.macId].lastHeartbeatTimeS = Time.unscaledTime;
+                            }
+
+                            // 同时进行超时踢出服务器
+                            if (Time.unscaledTime - IOCanvasModel.Instance.macIdSeatIdMap[res.macId].lastHeartbeatTimeS > 15)
+                            {
+                                IOCanvasModel.Instance.macIdSeatIdMap.Remove(res.macId);
+                            }
+                        }
+                        else
+                        {
+                            code = 1;
+                            msg = "请先登录服务器";
+                        }
+                        
+                        infoR.jsonData = JsonConvert.SerializeObject(
+                            new HeartbeatInfoR()
+                            {
+                                macId = res.macId,
+                                code = code,
+                                msg = msg,
+                            }
+                        );
+                    }
+                    catch (Exception ex)
+                    {
+
+                    }
+
+                    SendToClient(data.Client, JsonConvert.SerializeObject(infoR));
                     break;
                 default:
                     {

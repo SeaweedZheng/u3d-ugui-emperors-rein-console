@@ -502,8 +502,15 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
     public const int MAX_LIMIT_BETS_WINS = 100000;
 
     //#seaweed# public const int MIN_COIN_RATIO = 5;
+
+
+    //#seaweed# 即将弃用
     public const int MIN_COIN_RATIO = 1;
     public const int MAX_COIN_RATIO = 200;
+
+
+    public const int MAX_COIN_PER_SCORE = 200;  //MAX_COIN_PER_SCORE
+    public const int MAX_SCORE_PER_COIN = 10000;   //MAX_SCORE_PER_COIN
 
     public const int MAX_TICKET_VALUE = 200;
     public const int MAX_VALUE_TICKET = 50;
@@ -606,6 +613,7 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
             NewGameMode = data.NewGameMode,
 
             BallValue = data.BallValue,
+            ScoreValue = data.ScoreValue,
         };
     }
 
@@ -689,7 +697,7 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
 
 
     /// <summary> 座位号机台号绑定 </summary>
-    public Dictionary<int,int> seatIdMacIdMap = new Dictionary<int,int>();
+    public Dictionary<int, PlayInfo> macIdSeatIdMap = new Dictionary<int, PlayInfo>();
 
 
     /// <summary> 一球几分 </summary>
@@ -706,4 +714,13 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
 
     // 当前显示的彩金值
     public int[] CurJackpotOut = new int[] { 0, 0 ,0 ,0};
+}
+
+
+
+public class PlayInfo
+{
+    public int machineId = -1;
+    public int seatId = -1;
+    public float lastHeartbeatTimeS = 0;
 }

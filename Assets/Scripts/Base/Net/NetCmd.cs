@@ -20,7 +20,7 @@ public enum S2C_CMD
 
 
     // ====游戏自己的协议
-    S2C_HeartHeatR = 100,                      //心跳
+    S2C_HeartbeatR = 100,                      //心跳
     //【推币机】新加的协议  （新的协议名）
     S2C_LoginR,   //（新增）
     S2C_ReadConfR,  // 返回配置
@@ -44,7 +44,7 @@ public enum S2C_CMD
 public enum C2S_CMD
 {
     // ====游戏自己的协议
-    C2S_HeartHeat = 200,                      //心跳
+    C2S_Heartbeat = 200,                      //心跳
     C2S_Login,                                 //登录
     C2S_ReadConf,                            //读取配置
     C2S_JackBet,                               //下注
@@ -61,7 +61,6 @@ public enum C2S_CMD
 
 
 }
-
 
 
 

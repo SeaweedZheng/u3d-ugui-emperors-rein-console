@@ -45,8 +45,10 @@ public class IOPopTips : MonoSingleton<IOPopTips>
             isShow = true;
             ShowTimer(time);
         }
-        else
+        else {
             isShow = true;
+            Debug.Log("一直可见！！！");
+        }
         transform.localScale = isSystem ? Vector3.one : Vector3.one;
     }
 
@@ -64,4 +66,5 @@ public class IOPopTips : MonoSingleton<IOPopTips>
         transform.localScale = Vector3.zero;
         isShow = false;
     }
+
 }

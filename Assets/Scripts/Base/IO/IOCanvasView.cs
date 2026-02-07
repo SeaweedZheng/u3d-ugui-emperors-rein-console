@@ -53,6 +53,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
     private GameObject baseTogglePrefab;
     private GameObject baseSectionPrefab;
     private GameObject baseSectionPrefab1;
+    private GameObject coinRatioPrefab;
     private GameObject ticketRatioPrefab;
     private GameObject switchSectionsPrefab;
     private GameObject dateTimeSectionsPrefab;
@@ -100,6 +101,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         ResMgr.Instance.LoadAssetBundle("io", "baseSection0", (obj) => baseSectionPrefab = (GameObject)obj);
         ResMgr.Instance.LoadAssetBundle("io", "baseSection1", (obj) => baseSectionPrefab1 = (GameObject)obj);
 
+        ResMgr.Instance.LoadAssetBundle("io", "coinRatio", (obj) => coinRatioPrefab = (GameObject)obj);
         ResMgr.Instance.LoadAssetBundle("io", "ticketRatio", (obj) => ticketRatioPrefab = (GameObject)obj);
         ResMgr.Instance.LoadAssetBundle("io", "switchSection", (obj) => switchSectionsPrefab = (GameObject)obj);
         ResMgr.Instance.LoadAssetBundle("io", "dateTimeSection", (obj) => dateTimeSectionsPrefab = (GameObject)obj);
@@ -307,7 +309,11 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
         //#seaweed# InstantiateBaseSection(IOParams.CountDown.ToString(),IOCanvasModel.Instance.tempCfgData.CountDown, onClick: () => { OnSectionClick((int)IOParams.CountDown, IOSectionState.CountDown); }, ioParams: IOParams.CountDown);
         //#seaweed# InstantiateBaseSection(IOParams.MinBet.ToString(), IOCanvasModel.Instance.tempCfgData.MinBet, onClick: () => {  OnSectionClick((int)IOParams.MinBet, IOSectionState.MinBet); });
-        InstantiateBaseSection(IOParams.CoinRatio.ToString(), IOCanvasModel.Instance.tempCfgData.CoinValue, onClick: () => {   OnSectionClick((int)IOParams.CoinRatio, IOSectionState.CoinRatio); }, ioParams: IOParams.CoinRatio);
+
+
+        //#seaweed# 放弃-1币多少分 InstantiateBaseSection(IOParams.CoinRatio.ToString(), IOCanvasModel.Instance.tempCfgData.CoinValue, onClick: () => {   OnSectionClick((int)IOParams.CoinRatio, IOSectionState.CoinRatio); }, ioParams: IOParams.CoinRatio);
+
+        InstantiateCoinRatioSection(IOParams.CoinRatio.ToString(), onClick: () => { OnSectionClick((int)IOParams.CoinRatio, IOSectionState.CoinRatio); });
         InstantiateTicketRatioSection(IOParams.TicketRatio.ToString(), onClick: () => {   OnSectionClick((int)IOParams.TicketRatio, IOSectionState.TicketRatio); });
         //#seaweed# InstantiateBaseSection(IOParams.RefundMode.ToString(), Utils.GetEnumNames(typeof(IORefundMode)), IOCanvasModel.Instance.tempCfgData.TicketMode, onClick: () => {   OnSectionClick((int)IOParams.RefundMode, IOSectionState.RefundMode); });
         //#seaweed# InistantiateSwitchSection(IOParams.SkillMode.ToString(), IOCanvasModel.Instance.switchList, onClick: SwitchSectionClick);
@@ -1638,6 +1644,24 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         baseSelection.transform.localScale = Vector3.one;
         selectionList.Add(baseSelection);
     }
+
+
+    private void InstantiateCoinRatioSection(string title, UnityAction onClick = null, bool showBg = false)
+    {
+        IOBaseSection baseSelection = Instantiate(coinRatioPrefab).GetComponent<IOBaseSection>();
+        baseSelection.SetParentAndReset(menuPanel);
+        baseSelection.ShowBg = showBg;
+        baseSelection.title = title;
+        baseSelection.titleText.text = Utils.GetLanguage(title);
+        baseSelection.titleText.fontSize = IOCanvasModel.Instance.defaultFontSize;
+        baseSelection.contentText.fontSize = IOCanvasModel.Instance.defaultFontSize;
+        (baseSelection as IOCoinRatioSection).SetCurIndex();
+        baseSelection.AddListener(onClick);
+        baseSelection.transform.localScale = Vector3.one;
+        selectionList.Add(baseSelection);
+    }
+
+
 
     private void InstantiateTicketRatioSection(string title, UnityAction onClick = null, bool showBg = false)
     {
