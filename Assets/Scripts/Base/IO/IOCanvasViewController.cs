@@ -182,7 +182,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void OnRefreshIOCanvas()
     {
-        Debug.LogError("OnRefreshIOCanvas");
+        //Debug.LogError("¡¾Test¡¿OnRefreshIOCanvas");
         switch (State)
         {
             case IOState.Params:
@@ -1393,9 +1393,6 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         IOCanvasModel.Instance.tempCfgData.SwitchBetsUnitMid = IOCanvasModel.Instance.switchList[1];
         IOCanvasModel.Instance.tempCfgData.SwitchBetsUnitMax = IOCanvasModel.Instance.switchList[2];
         //SBoxIdea.WaveGameCount(1, IOCanvasModel.Instance.tempWaveGamecout);
-
-        Debug.LogWarning($"i am here SaveConfig  : {JsonConvert.SerializeObject(IOCanvasModel.Instance.tempCfgData)}");
-
 
         SBoxIdea.WriteConf(IOCanvasModel.Instance.tempCfgData);
     }

@@ -7,6 +7,7 @@ using Newtonsoft.Json;
 using SBoxApi;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using WebSockets;
 
@@ -119,8 +120,16 @@ public class NetMessageController : BaseManager<NetMessageController>
         isTestHitJP2 = false;
       
 
+        /*
         foreach (KeyValuePair<long, Action<SBoxApi.SBoxJackpotData>> item in funcJackpotDataDic)
         {
+            item.Value?.Invoke(data);
+        }*/
+
+        int i = funcJackpotDataDic.Count;
+        while (--i>=0)
+        {
+            KeyValuePair<long, Action<SBoxApi.SBoxJackpotData>> item = funcJackpotDataDic.ElementAt(i);
             item.Value?.Invoke(data);
         }
     }

@@ -12,7 +12,7 @@ public static class StartUpConfig
 
 
     /// <summary> 是否是正式包 (下个版本加)</summary>
-    public static bool isRelease => false; 
+    public static bool isRelease => true;
     
     public static string url => isRelease? "http://chresouce.oss-cn-guangzhou.aliyuncs.com/luomajp" : // 正式服
         "http://chresouce.oss-cn-guangzhou.aliyuncs.com/luomajp/Debug"; // 测试服

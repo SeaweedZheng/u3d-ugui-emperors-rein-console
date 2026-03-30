@@ -142,6 +142,8 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
                     case IOSectionState.NewPassword:
                         if (IOCanvasModel.Instance.tempPassword == password)
                             ChangePassword(password);
+                        else
+                            IOPopTips.Instance.ShowTips(Utils.GetLanguage("PasswordNotMatch"));
                         break;
                     default:
                         break;

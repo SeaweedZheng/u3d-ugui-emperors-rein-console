@@ -1,0 +1,691 @@
+<script type="text/javascript" src="D:/NoteWork-JXGDKJ/plugins/config.js"></script>
+<script type="text/javascript" src="D:/NoteWork-JXGDKJ/doc/js_tool/jslib/import.js"></script>
+
+<!-- ====【代码高亮】：包含 Prism.js 的 CSS 文件 
+官网：https://prismjs.com/download.html#themes=prism&languages=markup+css+clike+javascript
+1. 访问 Prism.js 官方下载页面。
+2.选择以下配置：
+* Core：勾选 Prism Core（基础解析器）。
+* Themes：选择 prism-okaidia.min.css（或其他你喜欢的主题）。
+* Languages：勾选你需要的语言（如 JavaScript、Python 等）。
+* Plugins（可选）：如需行号、自动加载等，勾选对应插件。
+3. 点击 "Download JS" 和 "Download CSS"，分别获取 prism.js 和 prism-okaidia.css。
+
+以上内容由文心人工智能生成
+-->
+
+<script type="text/javascript" src="D:/NoteWork-JXGDKJ/plugins/prismjs/custom01/prism.js"></script>
+<!-- 默认主题 --> 
+<link href="D:/NoteWork-JXGDKJ/plugins/prismjs/custom01/prism.css" rel="stylesheet" />
+<!-- Okaidia 主题（推荐）
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-okaidia.min.css" rel="stylesheet" /> -->
+<!-- Tomorrow 主题
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-tomorrow.min.css" rel="stylesheet" /> -->
+<!-- Twilight 主题
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-twilight.min.css" rel="stylesheet" />  -->
+<!-- 白色主题
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet" />  -->
+
+
+<!-- ====【如何网络引入】 -->
+<!-- Okaidia 主题（推荐）
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism-okaidia.min.css" rel="stylesheet" /> 
+<!-- 默认主题
+<link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/themes/prism.min.css" rel="stylesheet" />
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/components/prism-core.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.24.1/plugins/autoloader/prism-autoloader.min.js"></script> -->
+
+<pre><code class="language-html"><xmp>
+// 代码
+</xmp></code></pre>
+<!-- 可选语言
+class="language-csharp"
+class="language-yaml"
+class="language-html"
+class="language-markdown"
+class="language-bash"
+class="language-json"
+class="language-css"
+class="language-javascript"
+class="language-python"
+class="language-java"
+class="language-php"
+class="language-ruby"
+class="language-go"
+class="language-swift"
+class="language-typescript"
+class="language-sql"
+-->
+
+
+
+
+<pre>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<h1>入口脚本</h1>
+入口脚本 Main > 加载预制体 Load (挂mono脚本Load)
+
+
+<h1> 配置文件</h1>
+脚本: StartUpConfig 
+
+* 服务器地址
+* 热更包地址（项目地址 或 本地地址）
+
+<h1> 热更包：</h1>
+
+* UnityWebSocket.Runtime
+* Base 
+* Custom
+
+加载顺序：  UnityWebSocket.Runtime > Base  > Custom
+
+## 脚本路径
+
+Assets/Scripts/Custom
+
+
+<h1> ====打包流程 </h1>
+
+1. U3d > 菜单栏HybridCLR > Generate > LinkXml  (打包脚本)
+2. U3d > 菜单栏Tools >Copy Dll 
+3. U3d > 菜单栏Tools >Build AssetBundles
+4. 修改版本号： "Assets/StreamingAssets/Version.txt"
+5. 导出安卓工程、修改安卓版本号、打apk、进行签名
+
+<h1> ====打包相关信息 </h1>
+打包后的资源路劲： Assets/StreamingAssets/AssetBundles
+打包后的代码路劲（包含AOT）： Assets/StreamingAssets/Lib
+
+打包资源： Assets/Editor/BuildAssetBundle.cs
+
+    [MenuItem("Tools/Build AssetBundles")]
+	
+打包脚本： Assets/Editor/CopyDll.cs
+
+    [MenuItem("Tools/Copy Dll")]
+	
+	
+预制体存放的文件夹: Assets/Prefabs
+
+
+<h1> 注意：</h1>
+
+* 多语言无法文件无法热更新!
+
+* 每次打包要手动修改该热更版本号
+
+
+<h1> Flutter风格的UI界面 </h1>
+
+Flutter风格的UI组件路径： Assets/Prefabs/IO
+AB包名： "io"
+
+
+脚本路劲： Assets/Scripts/Base/IO
+
+美术资源路径： Assets/Sprites/UI/IO
+
+
+
+
+
+<h1> ====页面逻辑 </h1>
+
+* 分为主页面、后台页面
+
+* 后台页面里的：主菜单页、设置参数子页、打码子页、修改线号机台号子页...
+这都不算真正的页面，而是后台页面里的子节点。
+不同的子节点，修改当前后台显示的内容。
+
+
+
+<h1> ====页面类====</h1>
+
+
+## View： 主类
+
+
+
+<h1> 页面预制体</h1>
+
+ui： 主界面预制体
+
+IOCanvas： 后台主页面预制体
+
+
+
+EditIdDeleteBtnClick()  ：按键
+
+<h1> 页面业务逻辑脚本：</h1>
+
+<h2>主页面-业务逻辑脚本 View</h2>
+View : 主页面-业务逻辑脚本
+
+
+<h2>后台页面-业务逻辑脚本 IOCanvasView</h2>
+
+
+
+
+
+<h1> ====后台页面 </h1>
+
+
+<h1> 后台页面结构 </h1>
+
+## 后台页面的主体预制体：IOCanvas
+
+## 后台主菜单页、每个子页，都是IOCanvas的子节点。
+* 一个根页面节点，不同的子页面通过删除根节点下的内容，重新创建新内容来实现。
+* 不同子页面，通过状态 IOState 来标记。
+
+* IOCanvas/menuPanel
+不同子页面，轮流修改menuPanel内容 - 即当前显示的内容
+
+* IOCanvas/Tips 是提示弹窗
+
+
+## 使用枚举来，控制菜单按钮的排序。（枚举定义在IOCanvasModel类中）
+
+最外层菜单页： 枚举IOFunction
+
+参数设置页： 枚举IOParams
+
+
+
+## IOCanvasView： 后台页面-逻辑业务脚本
+
+
+
+<h1> 后台页面业务逻辑 - IOCanvasView</h1>
+
+<h2>入口函数：InitFunctionPanel </h2>
+
+void InitFunctionPanel() : 后台主菜单页面入口。
+
+
+IOBaseBtn InstantiateBaseBtn(...) // 后台主从菜单页-添加子项按钮
+ 
+ 
+
+InitParamsPanel() // 参数设置界面
+
+
+
+IOSectionState.GroupId
+
+selectSection.selected
+
+
+IOCanvasModel.Instance.tempCfgData.
+ 
+
+
+
+
+
+
+* 资源加载
+
+* IOCanvasModel.Instance.state ？？
+
+
+
+## IOCanvasManager： 这个类是和算法开交互的类
+
+
+## IOPasswordPanel:   这个是键盘面板？？
+
+* 是页面[IOCanvasView]的子节点。
+* 用于键盘输入
+
+
+
+
+
+# UI框架
+
+
+
+
+
+# 游戏彩金接口：
+
+JackpotBetHost
+
+
+
+脚本：NetCmd
+
+机台给彩金后台发： C2S_JackBet
+
+
+
+
+
+
+这个脚本用类实现服务器
+* NetMessageController 【脚本】后台服务器接受到前端机台的协议
+
+
+
+
+* 【问题】ClientWS  这客户端脚本被调用！！ 要解决
+
+
+NetMgr/ClientWS 这脚本被调用！！！！！
+
+
+
+
+
+# 脚本 Controller：  走20019协议给彩金后台传入 major 和 grand
+
+    public void OnJackpotBet(SBoxJackpotBet sBoxJackpotBet)
+    {
+        //Dictionary<string, string> postDic = new Dictionary<string, string>
+        //{
+        //    { "record", JsonConvert.SerializeObject(sBoxJackpotBet) }
+        //};
+        //Utils.Post("http://192.168.3.152/api/bonus_bet", postDic);
+        SQLite.Instance.sBoxJackpotBets.Enqueue(sBoxJackpotBet);
+
+        SBoxIdea.JackpotBetHost(sBoxJackpotBet);
+    }
+
+
+
+
+
+
+
+
+
+
+
+## IOCanvasManager
+
+* 统一请求后台数据，并结包到model中，再事件通知到View
+*
+
+
+
+InstantiateBaseShow() 显示文字
+
+
+InstantiateBlank();
+InstantiateBlank();
+
+
+
+## 返回按钮的写法：
+
+GameObject parent = new GameObject();
+tempObjList.Add(parent);
+parent.AddComponent<HorizontalLayoutGroup>();
+parent.transform.parent = menuPanel;
+parent.transform.localScale = Vector3.one;
+InstantiateBaseBtn("Return", ReturnToFunction, parent: parent.transform, style: 2, scale: 1f);
+var baseShow2 = InstantiateEasyShow(Utils.GetLanguage("ClickCancleTips"), "", parent: transform, fontSize: 40);
+
+
+
+private IOBaseBtn InstantiateBaseBtn(string str, 
+UnityAction unityAction, 
+bool showBg = true, 
+TextAnchor textAnchor = TextAnchor.MiddleCenter, 
+Transform parent = null, 
+int style = 1, 
+int fontSize = 20, 
+float scale = 1)
+
+
+
+
+
+<h3> ## 参数设置的加减回调脚本： </h3>
+ 
+IOCanvasViewController :  后台修改参数，加减回调脚本。
+ 
+void KeyUp(bool isAdd) ： 加减回调函数。
+
+
+
+<h3>## 长按箭头加、长按箭头减（快速加减）</h3>
+
+SelectedSectionDownAndLeft ： 长按减函数
+
+SelectedSectionUpAndRight ： 长按加函数
+
+
+<h3>## 确定按钮，返回按钮 -- 回调：</h3>
+
+void OnRefreshIOCanvas() ： 保存桉树修改
+
+ -- IOState State
+ 
+ 
+<h3>## 【接口】确定按钮，保留修改</h3>
+
+IOCanvasView.SaveConfig()
+
+
+<h3>## 【接口】实际值同步给 tempCfgData</h3>
+
+IOCanvasModel.SetTempCfgData()
+
+tempCfgData属性： 用来存放后台修改界面，所有参数的修改值
+
+ 
+### IOState ： 【枚举】 ： 后台那个界面：
+  State = IOState.Params; -- 参数设置界面
+
+ 
+         Debug.LogError("OnRefreshIOCanvas"); ？？
+		 
+		  Confirm ？？
+		  
+		  
+		  
+		  
+		  IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId
+		  
+## 如何查看页面显示的内容：
+
+通过 Utils.GetLanguage() 接口的应用，反查出“界面内容”在哪里编写。
+
+
+# ====页面修改
+
+## 针对多少分1票、1分多少票
+
+类：IOTicketRatioSection    显示：2分/1票
+
+
+
+		  
+# ====其他		  
+
+
+
+
+
+<h1> ==== 弹窗接口 </h1>
+
+提示弹窗 ： IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon"))
+
+"Comming soon":"敬请期待",
+
+
+
+
+//#seaweed# 
+
+/*#seaweed#  */
+
+
+# 参照做法
+参照IOSectionState.CountDown:的做法
+
+
+
+# 远程连接硬件调试：
+
+SBoxInit.Instance.Init("192.168.3.187", OnInitSBox);
+	
+	
+	
+<h1> =========Modle </h1> 
+
+#  IOCanvasModel
+
+* 后台彩金数据存储的model
+	
+	
+	
+<h1>  =========网络层：</h1>
+
+
+## NetMgr
+
+* NetMgr 可以选择 ServerWS 或 ClientWS
+
+* 服务器给客户端，或客户端给服务器 发数据的 统一接口。
+
+
+Messenger.AddListener<WSSrvMsgData>(MessageName.Event_NetworkWSServerData, OnWSServerData); // 客户端发给服务器的数据
+Messenger.AddListener<byte[]>(MessageName.Event_NetworkClientData, OnClientData);  // 服务器发给客户端的数据
+	
+	
+## ServerWS
+
+* udp 广播？
+
+*  StartServer 创建udp 
+
+-- 开启udp 
+
+-- 开启websocket
+
+-- 接收到 客户端 udp的请求时， 返回服务器的"ip"和"端口"
+
+
+
+
+
+
+
+## ClientWS
+
+* udp 广播 ？
+
+* websocket 给服务器发数据。
+
+* StartUdp() : 
+-- 开启udp 
+-- 监听udp数据
+-- 定时发送udp数据 请求服务器ip和端口
+拿到服务器地址后，停止定时发udp,开始websocket的连接
+
+	
+	
+
+	
+	
+## NetMessageController
+
+* 彩金后台-响应分机彩金押注的业务逻辑
+	
+	
+	
+	
+	
+	
+	NetCmd
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+	
+
+
+<h1>模板</h1>
+<h4></h4>
+<h5></h5>
+<h6></h6>
+
+<h1></h1>
+<h2></h2>
+<h3></h3>
+<a target="_blank" href=""></a>
+<img style="width:10%" src="" />
+<xmp></xmp>
+
+<a target="_blank" href="https://developer.aliyun.com/article/1507224">
+基于Notepad++ 快速替换 换行符 为 逗号</a>
+
+
+
+
+
+
+</pre>
+
+
+
+
+
+
+
+
+
+
+<!--textarea class="yaml" rows="4" cols="100"-->
+<textarea class="yaml">
+# YAML code goes here
+--- 
+# 不能使用tab键
+#注解1
+json:  #注解2
+- rigid
+- better for data interchange
+yaml:
+- slim and flexible
+- better for configuration
+object:
+  key: value
+  array:
+  - null_value: 
+  - boolean: true
+  - integer: 1
+paragraph: |
+  Blank lines denote
+  paragraph breaks
+content: |-
+  Or we
+  can auto
+  convert line breaks
+  to save space
+</textarea>
+<pre id="jsonOutput"></pre>
+<script>
+	function convertYAMLToJSON01() {
+		var yamlEls = document.getElementsByClassName('yaml')
+		;[...yamlEls].forEach(el=>{
+			el.rows = 4
+			el.cols = 100
+			var yamlText = el.value;
+			try {
+				var json = JSON.stringify(jsyaml.load(yamlText), null, 2);
+				var newElement = document.createElement('pre')
+				newElement.textContent = json;
+				el.parentNode.insertBefore(newElement, el.nextSibling);
+			} catch (e) {
+				console.error(e);
+				alert('An error occurred during conversion. Please check your YAML syntax.');
+			}	
+			
+		})
+	}
+</script>
+<!--script src="https://cdnjs.cloudflare.com/ajax/libs/js-yaml/4.1.0/js-yaml.min.js" onload="convertYAMLToJSON01()"></script-->
+<script src="D:/NoteWork-JXGDKJ/plugins/js-yaml__4.1.0__js-yaml.min.js" onload="convertYAMLToJSON01()"></script>
+
+
+
+
+<style>
+	table {border-collapse: collapse;}
+	tr,td{border:1px solid;}
+</style>
+
+
+<table>
+	<th>每日复盘表</th>
+	<tr style="font-weight:bold;">
+		<td 0>日期</td>
+		<td 1>*项目1<br>123</td>		
+		<td 2>*项目2<br>456</td>
+		<td 3>*项目3</td>
+	</tr>
+	<tr>
+		<td 0>20240322</td>
+		<td 1>×</td><td 2>√</td><td 3>×</td>
+	</tr>	
+	<tr>
+		<td 0>20240321</td>
+		<td 1>×</td><td 2>√</td><td 3>×</td>
+	</tr>	
+	<tr>
+		<td 0>20240320</td>
+		<td 1>×</td><td 2>√</td><td 3>×</td>
+	</tr>	
+	<tr>
+		<td 0>20240319</td>
+		<td 1>×</td><td 2>√</td><td 3>×</td>
+	</tr>	
+	<!--
+	<tr>
+		<td 0></td>
+		<td 1>√×</td><td 2>√×</td><td 3>√×</td><td 4>√×</td><td 5>√×</td><td 6>√×</td><td 7>√×</td><td 8>√×</td><td 9>√×</td>
+		<td 20></td><td 21></td><td 22></td>
+	</tr>
+	-->
+</table>
+
+
+
+<style>
+h1{color:#FF0000;}
+h2{color:#FF8800;}
+h3{color:#FFFF00;}
+h4{color:#00FF00;}
+h5{color:#0000FF;}
+h6{color:#CC00FF;}
+</style>
+<style>
+h1{color:#FF3333;}
+h2{color:#FFAA33;}
+h3{color:#FFFF33;}
+h4{color:#33FF33;}
+h5{color:#33CCFF;}
+h6{color:#E93EFF;}
+</style>
+<style>
+body{
+	background-color: #333333; /* background-color: black;*/
+	color: white;
+}
+h1{color:#FF8888;}
+h2{color:#FFBB66;}
+h3{color:#FFFF77;}
+h4{color:#66FF66;}
+h5{color:#77DDFF;}
+h6{color:#E38EFF;}
+</style>

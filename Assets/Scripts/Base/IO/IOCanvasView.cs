@@ -142,6 +142,9 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void OnEnable()
     {
+        // 当前软件版本
+        transform.Find("Image/Version").GetComponent<Text>().text = $"V{PlayerPrefs.GetString("CurVersion", "0.0.0")}";
+
         isGetJackpotData = false;
         InitManagerPasswordPanel();
         AddEventListener();
@@ -256,7 +259,9 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         int fontSize = IOCanvasModel.Instance.curlanguage == Language.en ? 54 : 66;
         InstantiateBaseBtn(IOFunction.Params.ToString(), InitParamsPanel, fontSize: fontSize);
         //#seaweed# InstantiateBaseBtn(IOFunction.Bill.ToString(), InitBillPanel, fontSize: fontSize);
-        InstantiateBaseBtn(IOFunction.Bill.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
+
+        // 查账
+        //InstantiateBaseBtn(IOFunction.Bill.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
 
         InstantiateBaseBtn(IOFunction.Code.ToString(), InitCodePanel, fontSize: fontSize); // 激活报表
         //InstantiateBaseBtn(IOFunction.Code.ToString(), () => { InitCodePanel); }, fontSize: fontSize); 
@@ -264,14 +269,19 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
         InstantiateBaseBtn(IOCanvasModel.Instance.curlanguage.ToString(), ChangeCurLanguage, fontSize: fontSize);
         InstantiateBaseBtn(IOFunction.EditPassword.ToString(), InitEditPasswordPanel, fontSize: fontSize);
-        InstantiateBaseBtn(IOFunction.JackpotSetting.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
+
+        // 彩金设置：
+        //InstantiateBaseBtn(IOFunction.JackpotSetting.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
+        
+        
         //InstantiateBaseBtn(IOFunction.JackpotBet.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
         //InstantiateBaseBtn(IOFunction.JackpotWins.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
         
         
         //#seaweed# InstantiateBaseBtn(IOFunction.CheckCoinPushHardware.ToString(), () => { InitSelectVisibleCoinPushMachinePanel(InitCheckCoinPushHardwarePanel); }, fontSize: fontSize);
 
-        if (IOCanvasModel.Instance.CfgData.MachineIdLock == 0 || IOCanvasModel.Instance.permissions == 3) InstantiateBaseBtn(IOParams.ProSetting.ToString(), InitProSettingPanel, fontSize: fontSize);
+        if (IOCanvasModel.Instance.CfgData.MachineIdLock == 0 || IOCanvasModel.Instance.permissions == 3) 
+            InstantiateBaseBtn(IOParams.ProSetting.ToString(), InitProSettingPanel, fontSize: fontSize);
 
        /* if (IOCanvasModel.Instance.CfgData.MachineIdLock == 0 || IOCanvasModel.Instance.permissions == 3)
             InstantiateBaseBtn(IOParams.ProSetting.ToString(), 
@@ -315,6 +325,9 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
         InstantiateCoinRatioSection(IOParams.CoinRatio.ToString(), onClick: () => { OnSectionClick((int)IOParams.CoinRatio, IOSectionState.CoinRatio); });
         InstantiateTicketRatioSection(IOParams.TicketRatio.ToString(), onClick: () => {   OnSectionClick((int)IOParams.TicketRatio, IOSectionState.TicketRatio); });
+        
+        
+        
         //#seaweed# InstantiateBaseSection(IOParams.RefundMode.ToString(), Utils.GetEnumNames(typeof(IORefundMode)), IOCanvasModel.Instance.tempCfgData.TicketMode, onClick: () => {   OnSectionClick((int)IOParams.RefundMode, IOSectionState.RefundMode); });
         //#seaweed# InistantiateSwitchSection(IOParams.SkillMode.ToString(), IOCanvasModel.Instance.switchList, onClick: SwitchSectionClick);
         //#seaweed# InstantiateBaseSection(IOParams.ClientWinLock.ToString(), IOCanvasModel.Instance.tempCfgData.PlayerWinLock, onClick: () => {   OnSectionClick((int)IOParams.ClientWinLock, IOSectionState.ClientWinLock); }, ioParams: IOParams.ClientWinLock);
@@ -358,7 +371,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         paramsDescrRect.anchoredPosition = new Vector2(707, -480);
         paramsDescrRect.sizeDelta = new Vector2(458, 200);
         paramsDescrRect.localScale = Vector3.one;
-        paramsDescrText.text = Utils.GetLanguage("ParamsDescr");
+        paramsDescrText.text = Utils.GetLanguage("ParamsDescr1");
         paramsDescrText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         paramsDescrText.fontStyle = FontStyle.Bold;
         paramsDescrText.fontSize = 30;
@@ -472,6 +485,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void InstantiateBillDetal()
     {
+        return;
         string machineIdStr = $"{curSelectMachineId}";
         string lineIdStr = machineIdStr.Substring(0, machineIdStr.Length - 4);
 
@@ -1142,7 +1156,10 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         var temp = (int)IOCanvasModel.Instance.curlanguage;
         temp = temp + 1 > Enum.GetValues(typeof(Language)).Cast<int>().Max() ? 0 : temp + 1;
         IOCanvasModel.Instance.CurLanguage = (Language)(Enum.Parse(typeof(Language), temp.ToString()));
-        selectionList[3].title = IOCanvasModel.Instance.curlanguage.ToString();
+
+        selectionList[(int)IOFunction.Language].title = IOCanvasModel.Instance.curlanguage.ToString();
+        //selectionList[2].title = IOCanvasModel.Instance.curlanguage.ToString();
+
         RefreshFunctionText();
         PlayerPrefs.SetInt("CurLanguage", (int)IOCanvasModel.Instance.curlanguage);
         PlayerPrefs.GetInt("CurLanguage");
@@ -1566,6 +1583,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         baseBtn.ShowBg = showBg;
         baseBtn.style = style;
         baseBtn.title = str;
+        Debug.Log("curTitle:" + str);
         baseBtn.titleText.fontSize = fontSize == 20 ? (style == 2 ? 52 : fontSize) : fontSize;
         baseBtn.titleText.text = Utils.GetLanguage(str);
         baseBtn.titleText.alignment = textAnchor;

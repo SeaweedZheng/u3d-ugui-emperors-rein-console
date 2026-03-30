@@ -763,6 +763,9 @@ namespace SBoxApi
          */
         public static void WriteConf(SBoxConfData sBoxConfData)
         {
+            //Debug.Log($"【UP1】i am WriteConf");
+            Debug.Log($"【{nameof(SBoxApi)}】up {nameof(WriteConf)}: {JsonConvert.SerializeObject(sBoxConfData)}");
+
             SBoxPacket sBoxPacket = new SBoxPacket(cmd: 20003, source: 1, target: 2, size: 64);
             int pos = 0;
 
@@ -815,6 +818,7 @@ namespace SBoxApi
                 result = sBoxPacket.data[0],
                 permissions = sBoxPacket.data[1]
             };
+            Debug.Log($"【{nameof(SBoxApi)}】down {nameof(WriteConfR)}: {JsonConvert.SerializeObject(sBoxPermissionsData)}");
             EventCenter.Instance.EventTrigger(SBoxEventHandle.SBOX_WRITE_CONF, sBoxPermissionsData);
         }
 

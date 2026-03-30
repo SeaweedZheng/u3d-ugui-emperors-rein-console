@@ -99,7 +99,6 @@ public enum IOSectionState
 public enum IOFunction
 {
     Params,
-    Bill,
     Code,
     Language,
     EditPassword,
@@ -110,6 +109,9 @@ public enum IOFunction
     ClientData,
     ProSetting,
     Exit,
+
+    Bill,
+
 
 
     //推币机
@@ -128,7 +130,6 @@ public enum IOParams
 
     /// <summary> 组id </summary>
     GroupId,
-
 
 
     /// <summary> 倒计时 </summary>
@@ -712,7 +713,7 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
 
 
 
-    // 当前显示的彩金值
+    // 当前显示的彩金值(保存当前的彩金值-其他机台查询用)
     public int[] CurJackpotOut = new int[] { 0, 0 ,0 ,0};
 }
 
