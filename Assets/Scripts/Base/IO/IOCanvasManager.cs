@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class IOCanvasManager : BaseManager<IOCanvasManager>
+public partial class IOCanvasManager : BaseManager<IOCanvasManager>
 {
     public IOCanvasView view;
     public void Init(IOCanvasView view)
@@ -12,6 +12,9 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
         this.view = view;
         IOCanvasModel.Instance.horizontal = true;
         AddEventListener();
+
+
+        OnInitViewFinish();
     }
 
     private void AddEventListener()
@@ -25,6 +28,20 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
         EventCenter.Instance.AddEventListener<SBoxCoderData>(SBoxEventHandle.SBOX_REQUEST_CODER, OnRequestCoder);
         EventCenter.Instance.AddEventListener<SBoxPermissionsData>(SBoxEventHandle.SBOX_CODER, OnSBoxCode);
         EventCenter.Instance.AddEventListener<DateTime>(SBoxEventHandle.SBOX_SANDBOX_GET_DATETIME, OnSandboxGetDateTime);
+
+
+
+        //#seaweed# 新加 - 彩金设置相关
+        EventCenter.Instance.AddEventListener<SBoxJackpotSetResult>(SBoxEventHandle.SBOX_JACKPOT_WRITE_CONFIG, OnJackpotWriteConfig);
+        EventCenter.Instance.AddEventListener<SBoxJackpotConfigData>(SBoxEventHandle.SBOX_JACKPOT_READ_CONFIG, OnJackpotReadConfig);
+
+
+    }
+
+
+    private void OnInitViewFinish()
+    {
+        SBoxIdea.JackpotReadConfig();
     }
 
     private void OnSandboxGetDateTime(DateTime dateTime)
@@ -129,7 +146,7 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
                 CheckPassword(password);
                 break;
             case IOState.Code:
-                    SBoxIdea.Coder(0, (ulong)password);
+                SBoxIdea.Coder(0, (ulong)password);
                 break;
             case IOState.EditPassword:
                 switch (view.selectSection.state)
@@ -177,7 +194,7 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
             return;
         }
         IOCanvasModel.Instance.permissions = sBoxPermissionsData.permissions;
-     
+
         if (Application.isEditor)
             sBoxPermissionsData.permissions = 2;
         if (sBoxPermissionsData.permissions > 0)
@@ -195,7 +212,7 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
                     break;
                 default:
                     break;
-            } 
+            }
         }
         else
             IOPopTips.Instance.ShowTips($"{Utils.GetLanguage("PasswordWrong")}:{sBoxPermissionsData.result}");
@@ -259,4 +276,59 @@ public class IOCanvasManager : BaseManager<IOCanvasManager>
                 break;
         }
     }
+
+
+
+
+
+
+    #region  彩金相关的接口
+
+
+    /// <summary>
+    /// 配置主机4个彩金参数
+    /// </summary>
+    /// <param name="sBoxJackpotSetResult"></param>
+    private void OnJackpotWriteConfig(SBoxJackpotSetResult sBoxJackpotSetResult)
+    {
+        switch (sBoxJackpotSetResult.result)
+        {
+            case -1:
+                IOPopTips.Instance.ShowTips(Utils.GetLanguage("ParamsWrong"));
+                break;
+            case 0:
+                IOPopTips.Instance.ShowTips(Utils.GetLanguage("SaveSucceed"));
+                break;
+            case 1:
+                IOPopTips.Instance.ShowTips(Utils.GetLanguage("VerificationCodeRequired"));
+                break;
+            case 2:
+                IOPopTips.Instance.ShowTips(Utils.GetLanguage("NeedCode"));
+                break;
+        }
+        SBoxIdea.JackpotReadConfig();
+    }
+
+
+
+    /// <summary>
+    /// 读取主机4个彩金的配置数据
+    /// </summary>
+    /// <param name="sBoxJackpotConfigData"></param>
+    private void OnJackpotReadConfig(SBoxJackpotConfigData sBoxJackpotConfigData)
+    {
+        Debug.LogError($"########## i am  OnJackpotReadConfig = {JsonConvert.SerializeObject(sBoxJackpotConfigData)}");
+        //Debug.Log(JsonConvert.SerializeObject(sBoxJackpotConfigData));
+        IOCanvasModel.Instance.JackCfgData = sBoxJackpotConfigData;
+
+        EventCenter.Instance.EventTrigger(EventHandle.REFRESH_IOCANVAS); // 刷新UI显示
+    }
+
+
+    public void UpdateParamsPanle()
+    {
+        view.UpdateParamsPanle();
+    }
+
+    #endregion
 }

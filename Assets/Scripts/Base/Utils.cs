@@ -318,4 +318,29 @@ public static class Utils
         }
         return (T)retval;
     }
+
+
+
+    /// <summary>
+    /// 计算字符串宽度：ASCII=1，中文=2
+    /// </summary>
+    public static int GetStringVisualWidth(string str)
+    {
+        int width = 0;
+        foreach (char c in str)
+        {
+            // 判断是否是中文汉字/全角字符
+            if (c > 127)
+            {
+                width += 2;
+            }
+            else
+            {
+                width += 1;
+            }
+        }
+        return width;
+    }
+
+
 }

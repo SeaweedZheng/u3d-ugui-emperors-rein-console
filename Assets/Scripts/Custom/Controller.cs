@@ -122,7 +122,8 @@ public class Controller : BaseManager<Controller>
 
     private void OnJackpotReadConfig(SBoxJackpotConfigData sBoxJackpotConfigData)
     {
-        Debug.Log(JsonConvert.SerializeObject(sBoxJackpotConfigData));
+        Debug.LogError($"########## i am  OnJackpotReadConfig = {JsonConvert.SerializeObject(sBoxJackpotConfigData)}");
+        //Debug.Log(JsonConvert.SerializeObject(sBoxJackpotConfigData));
         IOCanvasModel.Instance.JackCfgData = sBoxJackpotConfigData;
     }
 

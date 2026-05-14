@@ -5,6 +5,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Events;
 
 public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 {
@@ -185,8 +186,11 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         //Debug.LogError("【Test】OnRefreshIOCanvas");
         switch (State)
         {
-            case IOState.Params:
-                RefreshParamsPanel();
+            case IOState.Params: // 普通参数设置页
+                RefreshParamsPanel();  
+                break;
+            case IOState.JackpotParams: //彩金参数设置页
+                RefresJackpotParamsPanelAtSave();
                 break;
             case IOState.Bill:
             case IOState.Code:
@@ -213,19 +217,18 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         //IOCanvasModel.Instance.BallValue = IOCanvasModel.Instance.tempCfgData.BallValue;
         //Debug.LogError($"@2 groupId: {IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId}");
 
+
+        int offsetIdx = (int)IOParams.GroupId;
+
         for (int i = 0; i < selectionList.Count; i++)
         {
             var selection = selectionList[i];
-            switch (i)
+            switch (i  + offsetIdx)
             {
-                /*#seaweed# 
-                case (int)IOParams.CountDown:
-                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.CountDown;
+                case (int)IOParams.GroupId:
+
+                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempGroupId;
                     break;
-                case (int)IOParams.MinBet:
-                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.MinBet;
-                    break;
-                */
                 case (int)IOParams.CoinRatio:
                     // 只有1币多少分
                     //(selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.CoinValue;
@@ -236,10 +239,27 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 case (int)IOParams.TicketRatio:
                     (selection as IOTicketRatioSection).SetCurIndex();
                     break;
-                /*#seaweed# 
-                case (int)IOParams.RefundMode:
+
+                case (int)IOParams.BallValue: // 1球多少分 
+
+                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.BallValue;
+ 
+                    break;
+
+                case (int)IOParams.RefundMode: //退票模式 
                     (selection as IOBaseSection).CurIndex = (int)IOCanvasModel.Instance.tempCfgData.TicketMode;
                     break;
+
+                /*#seaweed# 
+                case (int)IOParams.CountDown:
+                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.CountDown;
+                    break;
+                case (int)IOParams.MinBet:
+                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.MinBet;
+                    break;
+                */
+
+                /*#seaweed# 
                 case (int)IOParams.SkillMode:
                     (selection as IOSwitchSection).UpdateSwitch();
                     break;
@@ -256,9 +276,9 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 //case (int)IOParams.JackpotLevel:
                 //    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.tempCfgData.JackpotLevel;
                 //    break;
-                case (int)IOParams.WaveGameCount:
-                    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.waveGameCount;
-                    break;
+                //case (int)IOParams.WaveGameCount:
+                //    (selection as IOBaseSection).CurIndex = IOCanvasModel.Instance.waveGameCount;
+                //    break;
             }
         }
     }
@@ -631,6 +651,266 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 () => { ValueChange(true, ref IOCanvasModel.Instance.tempJackpotCfg.jpPercent, IOCanvasModel.MIN_JACKPOT_PERCENT, IOCanvasModel.MAX_JACKPOT_PERCENT); }));
                 break;
 
+
+
+
+
+
+            //#seaweed# 新增加主机彩金相关配置：
+            case IOSectionState.miniBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMiniBaseValue, IOCanvasModel.Instance.MINI_MIN_BASE_VALUE, IOCanvasModel.Instance.MINI_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempMiniBaseValue = value;
+                   }, offset: int.Parse((IOCanvasModel.Instance.JackCfgData.BaseSetValue * 0.5f).ToString()));
+               }));
+                break;
+
+
+            case IOSectionState.miniMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMiniMinTriggerValue,
+                       IOCanvasModel.Instance.MINI_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.MINI_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMiniMinTriggerValue = value;
+                       },
+                       offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.1f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.miniMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMiniMaxTriggerValue, IOCanvasModel.Instance.MINI_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MINI_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+
+            case IOSectionState.miniWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMiniWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMiniWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+
+            case IOSectionState.miniMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMiniMinBet, 
+                        IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, 
+                        (int value) => {
+                        IOCanvasModel.Instance.TempMiniMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.miniMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMiniMaxBet, IOCanvasModel.Instance.MINI_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMaxBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.minorBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMinorBaseValue, IOCanvasModel.Instance.MINOR_MIN_BASE_VALUE, IOCanvasModel.Instance.MINOR_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempMinorBaseValue = value;
+                   }, offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.5f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.minorMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMinorMinTriggerValue,
+                       IOCanvasModel.Instance.MINOR_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.MINOR_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMinorMinTriggerValue = value;
+                       },
+                       offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.1f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.minorMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMinorMaxTriggerValue, IOCanvasModel.Instance.MINOR_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MINOR_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+
+            case IOSectionState.minorWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMinorWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMinorWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+
+            case IOSectionState.minorMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMinorMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.minorMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMinorMaxBet, IOCanvasModel.Instance.MINOR_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMaxBet = value;
+                    });
+                }));
+                break;
+
+            case IOSectionState.majorBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMajorBaseValue, IOCanvasModel.Instance.MAJOR_MIN_BASE_VALUE, IOCanvasModel.Instance.MAJOR_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempMajorBaseValue = value;
+                   }, offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.5f).ToString()));
+               }));
+                break;
+
+
+            case IOSectionState.majorMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMajorMinTriggerValue,
+                       IOCanvasModel.Instance.MAJOR_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.MAJOR_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMajorMinTriggerValue = value;
+                       },
+                     offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.1f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.majorMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMajorMaxTriggerValue, IOCanvasModel.Instance.MAJOR_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MAJOR_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+
+            case IOSectionState.majorWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempMajorWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMajorWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+
+            case IOSectionState.majorMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMajorMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.majorMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempMajorMaxBet, IOCanvasModel.Instance.MAJOR_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMaxBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.grandBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempGrandBaseValue, IOCanvasModel.Instance.GRAND_MIN_BASE_VALUE, IOCanvasModel.Instance.GRAND_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempGrandBaseValue = value;
+                   }, offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.5f).ToString()));
+               }));
+                break;
+
+
+            case IOSectionState.grandMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(true, IOCanvasModel.Instance.TempGrandMinTriggerValue,
+                       IOCanvasModel.Instance.GRAND_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.GRAND_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempGrandMinTriggerValue = value;
+                       },
+                       offset: int.Parse((IOCanvasModel.Instance.TempGrandBaseValue * 0.1f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.grandMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempGrandMaxTriggerValue, IOCanvasModel.Instance.GRAND_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.GRAND_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempGrandBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+
+            case IOSectionState.grandWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempGrandWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempGrandWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+
+            case IOSectionState.grandMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempGrandMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.grandMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(true, IOCanvasModel.Instance.TempGrandMaxBet, IOCanvasModel.Instance.GRAND_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMaxBet = value;
+                    });
+                }));
+                break;
+
+
+
+
             default:
                 break;
         }
@@ -801,6 +1081,264 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 pressCorutine = StartCoroutine(PressEnumerator(
                 () => { ValueChange(false, ref IOCanvasModel.Instance.tempWaveGamecout, IOCanvasModel.MIN_WAVE_GAME_COUNT, IOCanvasModel.MAX_WAVE_GAME_COUNT, offset: 1); }));
                 break;
+
+
+
+
+
+
+
+
+            // ========主机彩金：
+
+            case IOSectionState.miniBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMiniBaseValue, 
+                       IOCanvasModel.Instance.MINI_MIN_BASE_VALUE, 
+                       IOCanvasModel.Instance.MINI_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempMiniBaseValue = value;
+                   }, 
+                   offset: int.Parse((IOCanvasModel.Instance.JackCfgData.BaseSetValue * 0.5f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.miniMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMiniMinTriggerValue,
+                       IOCanvasModel.Instance.MINI_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.MINI_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMiniMinTriggerValue = value;
+                       },
+                       offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.1f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.miniMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMiniMaxTriggerValue, IOCanvasModel.Instance.MINI_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MINI_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+
+            case IOSectionState.miniWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMiniWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMiniWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+
+            case IOSectionState.miniMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMiniMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.miniMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMiniMaxBet, IOCanvasModel.Instance.MINI_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMaxBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.minorBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMinorBaseValue, IOCanvasModel.Instance.MINOR_MIN_BASE_VALUE, IOCanvasModel.Instance.MINOR_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempMinorBaseValue = value;
+                   }, offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.5f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.minorMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMinorMinTriggerValue,
+                       IOCanvasModel.Instance.MINOR_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.MINOR_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMinorMinTriggerValue = value;
+                       },
+                       offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.1f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.minorMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMinorMaxTriggerValue, IOCanvasModel.Instance.MINOR_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MINOR_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+            case IOSectionState.minorWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMinorWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMinorWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+            case IOSectionState.minorMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMinorMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.minorMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMinorMaxBet, IOCanvasModel.Instance.MINOR_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMaxBet = value;
+                    });
+                }));
+                break;
+
+            case IOSectionState.majorBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMajorBaseValue, IOCanvasModel.Instance.MAJOR_MIN_BASE_VALUE, IOCanvasModel.Instance.MAJOR_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempMajorBaseValue = value;
+                   }, offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.5f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.majorMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMajorMinTriggerValue,
+                       IOCanvasModel.Instance.MAJOR_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.MAJOR_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMajorMinTriggerValue = value;
+                       },
+                     offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.1f).ToString()));
+               }));
+                break;
+            case IOSectionState.majorMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMajorMaxTriggerValue, IOCanvasModel.Instance.MAJOR_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MAJOR_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+
+            case IOSectionState.majorWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempMajorWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempMajorWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+            case IOSectionState.majorMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMajorMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.majorMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempMajorMaxBet, IOCanvasModel.Instance.MAJOR_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMaxBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.grandBaseValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempGrandBaseValue, IOCanvasModel.Instance.GRAND_MIN_BASE_VALUE, IOCanvasModel.Instance.GRAND_MAX_BASE_VALUE, (int value) => {
+                       IOCanvasModel.Instance.TempGrandBaseValue = value;
+                   }, offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.5f).ToString()));
+               }));
+                break;
+
+            case IOSectionState.grandMinTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempGrandMinTriggerValue,
+                       IOCanvasModel.Instance.GRAND_MIN_MIN_TRIGGER_VALUE,
+                       IOCanvasModel.Instance.GRAND_MAX_MIN_TRIGGER_VALUE,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempGrandMinTriggerValue = value;
+                       },
+                       offset: int.Parse((IOCanvasModel.Instance.TempGrandBaseValue * 0.1f).ToString()));
+               }));
+                break;
+            case IOSectionState.grandMaxTriggerValue:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempGrandMaxTriggerValue, IOCanvasModel.Instance.GRAND_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.GRAND_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempGrandBaseValue * 0.1f).ToString()));
+                }));
+                break;
+
+
+            case IOSectionState.grandWeight:
+                pressCorutine = StartCoroutine(PressEnumerator(
+               () => {
+                   ValueChange(false, IOCanvasModel.Instance.TempGrandWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                       (int value) => {
+                           IOCanvasModel.Instance.TempGrandWeight = value;
+                       },
+                       offset: 50);
+               }));
+                break;
+
+            case IOSectionState.grandMinBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempGrandMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMinBet = value;
+                    });
+                }));
+                break;
+            case IOSectionState.grandMaxBet:
+                pressCorutine = StartCoroutine(PressEnumerator(
+                () => {
+                    ValueChange(false, IOCanvasModel.Instance.TempGrandMaxBet, IOCanvasModel.Instance.GRAND_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMaxBet = value;
+                    });
+                }));
+                break;
+
+
+
+
+
             default:
                 break;
         }
@@ -873,6 +1411,8 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         if (!pressFlag)
             switch (selectSection.state)
             {
+
+                // ====普通页参数设置
                 case IOSectionState.GroupId:
                     //Debug.LogError($"i am GroupId ");
                     break;
@@ -1025,7 +1565,175 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 case IOSectionState.WaveGameCount:
                     ValueChange(isAdd, ref IOCanvasModel.Instance.tempWaveGamecout, IOCanvasModel.MIN_WAVE_GAME_COUNT, IOCanvasModel.MAX_WAVE_GAME_COUNT, offset: 1);
                     break;
+
+
+
+
+
+
+
+
+                // ====彩金参数设置：
+                case IOSectionState.miniBaseValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMiniBaseValue, IOCanvasModel.Instance.MINI_MIN_BASE_VALUE, IOCanvasModel.Instance.MINI_MAX_BASE_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMiniBaseValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.JackCfgData.BaseSetValue * 0.5f).ToString()));
+                    break;
+                case IOSectionState.miniMinTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMiniMinTriggerValue,
+                        IOCanvasModel.Instance.MINI_MIN_MIN_TRIGGER_VALUE,
+                        IOCanvasModel.Instance.MINI_MAX_MIN_TRIGGER_VALUE,
+                        (int value) => {
+                        IOCanvasModel.Instance.TempMiniMinTriggerValue = value;
+                    },
+                        offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.1f).ToString()));
+                    break;
+                case IOSectionState.miniMaxTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMiniMaxTriggerValue, IOCanvasModel.Instance.MINI_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MINI_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.1f).ToString()));
+                    break;
+                case IOSectionState.miniWeight:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMiniWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                        (int value) => {
+                            IOCanvasModel.Instance.TempMiniWeight = value;
+                        },
+                        offset: 50);
+                    break;
+                case IOSectionState.miniMinBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMiniMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMinBet = value;
+                    });
+                    break;
+                case IOSectionState.miniMaxBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMiniMaxBet, IOCanvasModel.Instance.MINI_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMiniMaxBet = value;
+                    });
+                    break;
+                case IOSectionState.minorBaseValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMinorBaseValue, IOCanvasModel.Instance.MINOR_MIN_BASE_VALUE, IOCanvasModel.Instance.MINOR_MAX_BASE_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMinorBaseValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMiniBaseValue * 0.5f).ToString()));
+                    break;
+
+                case IOSectionState.minorMinTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMinorMinTriggerValue,
+                        IOCanvasModel.Instance.MINOR_MIN_MIN_TRIGGER_VALUE,
+                        IOCanvasModel.Instance.MINOR_MAX_MIN_TRIGGER_VALUE,
+                        (int value) => {
+                            IOCanvasModel.Instance.TempMinorMinTriggerValue = value;
+                        },
+                        offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.1f).ToString()));
+                    break;
+                case IOSectionState.minorMaxTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMinorMaxTriggerValue, IOCanvasModel.Instance.MINOR_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MINOR_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.1f).ToString()));
+                    break;
+
+                case IOSectionState.minorWeight:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMinorWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                        (int value) => {
+                            IOCanvasModel.Instance.TempMinorWeight = value;
+                        },
+                        offset: 50);
+                    break;
+                case IOSectionState.minorMinBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMinorMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMinBet = value;
+                    });
+                    break;
+                case IOSectionState.minorMaxBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMinorMaxBet, IOCanvasModel.Instance.MINOR_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMinorMaxBet = value;
+                    });
+                    break;
+                case IOSectionState.majorBaseValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMajorBaseValue, IOCanvasModel.Instance.MAJOR_MIN_BASE_VALUE, IOCanvasModel.Instance.MAJOR_MAX_BASE_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMajorBaseValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMinorBaseValue * 0.5f).ToString()));
+                    break;
+                case IOSectionState.majorMinTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMajorMinTriggerValue,
+                        IOCanvasModel.Instance.MAJOR_MIN_MIN_TRIGGER_VALUE,
+                        IOCanvasModel.Instance.MAJOR_MAX_MIN_TRIGGER_VALUE,
+                        (int value) => {
+                            IOCanvasModel.Instance.TempMajorMinTriggerValue = value;
+                        },
+                        offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.1f).ToString()));
+                    break;
+                case IOSectionState.majorMaxTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMajorMaxTriggerValue, IOCanvasModel.Instance.MAJOR_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.MAJOR_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.1f).ToString()));
+                    break;
+                case IOSectionState.majorWeight:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMajorWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                        (int value) => {
+                            IOCanvasModel.Instance.TempMajorWeight = value;
+                        },
+                        offset: 50);
+                    break;
+                case IOSectionState.majorMinBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMajorMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMinBet = value;
+                    });
+                    break;
+                case IOSectionState.majorMaxBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempMajorMaxBet, IOCanvasModel.Instance.MAJOR_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempMajorMaxBet = value;
+                    });
+                    break;
+                case IOSectionState.grandBaseValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempGrandBaseValue, IOCanvasModel.Instance.GRAND_MIN_BASE_VALUE, IOCanvasModel.Instance.GRAND_MAX_BASE_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempGrandBaseValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempMajorBaseValue * 0.5f).ToString()));
+                    break;
+
+                case IOSectionState.grandMinTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempGrandMinTriggerValue,
+                            IOCanvasModel.Instance.GRAND_MIN_MIN_TRIGGER_VALUE,
+                            IOCanvasModel.Instance.GRAND_MAX_MIN_TRIGGER_VALUE,
+                        (int value) => {
+                            IOCanvasModel.Instance.TempGrandMinTriggerValue = value;
+                        },
+                        offset: int.Parse((IOCanvasModel.Instance.TempGrandBaseValue * 0.1f).ToString()));
+                    break;
+                case IOSectionState.grandMaxTriggerValue:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempGrandMaxTriggerValue, IOCanvasModel.Instance.GRAND_MIN_MAX_TRIGGER_VALUE, IOCanvasModel.Instance.GRAND_MAX_MAX_TRIGGER_VALUE, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMaxTriggerValue = value;
+                    }, offset: int.Parse((IOCanvasModel.Instance.TempGrandBaseValue * 0.1f).ToString()));
+                    break;
+                case IOSectionState.grandWeight:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempGrandWeight,
+                        IOCanvasModel.MIN_WEIGHT,
+                        IOCanvasModel.MAX_WEIGHT,
+                        (int value) => {
+                            IOCanvasModel.Instance.TempGrandWeight = value;
+                        },
+                        offset: 50);
+                    break;
+                case IOSectionState.grandMinBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempGrandMinBet, IOCanvasModel.MIN_MIN_BET, IOCanvasModel.MAX_MIN_BET, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMinBet = value;
+                    });
+                    break;
+                case IOSectionState.grandMaxBet:
+                    ValueChange(isAdd, IOCanvasModel.Instance.TempGrandMaxBet, IOCanvasModel.Instance.GRAND_MIN_MAX_BET, IOCanvasModel.MAX_MAX_BET, (int value) => {
+                        IOCanvasModel.Instance.TempGrandMaxBet = value;
+                    });
+                    break;
+
             }
+
+
+
         pressing = false;
         pressFlag = false;
         StopCoroutine(pressCorutine);
@@ -1105,10 +1813,11 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                     case (int)IOParams.TicketRatio:
                         selectSection.state = IOSectionState.TicketRatio;
                         break;
-                    /*#seaweed# 
+
                     case (int)IOParams.RefundMode:
                         selectSection.state = IOSectionState.RefundMode;
                         break;
+                    /*#seaweed# 
                     case (int)IOParams.SkillMode:
                         selectSection.state = IOSectionState.SkillMode;
                         break;
@@ -1604,6 +2313,34 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 value = value / 10 * 10 < min ? min : value / 10 * 10;
         }
         selectSection.baseSection.CurIndex = value;
+    }
+
+    /// <summary>
+    /// seaweed-新增加
+    /// </summary>
+    /// <param name="add"></param>
+    /// <param name="value"></param>
+    /// <param name="min"></param>
+    /// <param name="max"></param>
+    /// <param name="setValue"></param>
+    /// <param name="offset"></param>
+    private void ValueChange(bool add, int value, int min, int max, UnityAction<int> setValue, int offset = 100)
+    {
+        if (value == -1) return;
+        value = add ?
+                value + offset > max ?
+                max : value + offset
+                : value - offset < min ?
+                min : value - offset;
+        if (offset == 10 && value % 10 != 0)
+            value = value / 10 * 10 < min ? min : value / 10 * 10;
+
+        //#seaweed#
+        if(value <min)
+            value = min;
+
+        selectSection.baseSection.CurIndex = value;
+        setValue(value);
     }
 
     private void ValueChangeLoop(bool add, ref int value, int min, int max, int offset = 1)

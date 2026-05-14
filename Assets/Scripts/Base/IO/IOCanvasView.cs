@@ -18,6 +18,14 @@ public class SectionData
 
 public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 {
+
+    /// <summary> 测试用 </summary>
+    RectTransform rtfmTestDot => transform.Find("Test Dot").GetComponent<RectTransform>();
+
+
+
+
+    //================================
     private int curSelect;
     private bool isGetJackpotData;
     private bool betDataCoinValueShow;
@@ -26,7 +34,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
     /// 当前选择设置的对象
     /// </summary>
     [HideInInspector]
-    public SectionData selectSection = new SectionData();  
+    public SectionData selectSection = new SectionData();
     private IOState State
     {
         set { IOCanvasModel.Instance.state = value; }
@@ -53,6 +61,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
     private GameObject baseTogglePrefab;
     private GameObject baseSectionPrefab;
     private GameObject baseSectionPrefab1;
+    private GameObject baseSectionPrefab2; //#seaweed# 新增加
     private GameObject coinRatioPrefab;
     private GameObject ticketRatioPrefab;
     private GameObject switchSectionsPrefab;
@@ -100,6 +109,9 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         ResMgr.Instance.LoadAssetBundle("io", "baseToggle", (obj) => baseTogglePrefab = (GameObject)obj);
         ResMgr.Instance.LoadAssetBundle("io", "baseSection0", (obj) => baseSectionPrefab = (GameObject)obj);
         ResMgr.Instance.LoadAssetBundle("io", "baseSection1", (obj) => baseSectionPrefab1 = (GameObject)obj);
+        ResMgr.Instance.LoadAssetBundle("io", "baseSection2", (obj) => baseSectionPrefab2 = (GameObject)obj);//#seaweed# 新增加
+
+
 
         ResMgr.Instance.LoadAssetBundle("io", "coinRatio", (obj) => coinRatioPrefab = (GameObject)obj);
         ResMgr.Instance.LoadAssetBundle("io", "ticketRatio", (obj) => ticketRatioPrefab = (GameObject)obj);
@@ -167,6 +179,8 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         EventCenter.Instance.AddEventListener(EventHandle.INIT_CODER_VIEW, OnInitCoderView);
         EventCenter.Instance.AddEventListener(EventHandle.GET_SANDBOX_DATE, OnGetSandboxDate);
         //EventCenter.Instance.AddEventListener<Dictionary<int, List<BetData>>>(EventHandle.GET_NET_JACKPOT_DATA, OnGetNetJackpotData);
+
+
     }
 
     private void RemoveEventListener()
@@ -184,6 +198,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         EventCenter.Instance.RemoveEventListener(EventHandle.INIT_BILL_VIEW, OnInitBillView);
         EventCenter.Instance.RemoveEventListener(EventHandle.INIT_CODER_VIEW, OnInitCoderView);
         EventCenter.Instance.RemoveEventListener(EventHandle.GET_SANDBOX_DATE, OnGetSandboxDate);
+
     }
 
     private void InitManagerPasswordPanel()
@@ -270,14 +285,15 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         InstantiateBaseBtn(IOCanvasModel.Instance.curlanguage.ToString(), ChangeCurLanguage, fontSize: fontSize);
         InstantiateBaseBtn(IOFunction.EditPassword.ToString(), InitEditPasswordPanel, fontSize: fontSize);
 
-        // 彩金设置：
+        //#seaweed#-新增加 彩金设置：
+        InstantiateBaseBtn(IOFunction.JackpotSetting.ToString(), InitJackpotParamsPanel, fontSize: fontSize);
         //InstantiateBaseBtn(IOFunction.JackpotSetting.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
-        
-        
+
+
         //InstantiateBaseBtn(IOFunction.JackpotBet.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
         //InstantiateBaseBtn(IOFunction.JackpotWins.ToString(), () => IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon")), fontSize: fontSize);
-        
-        
+
+
         //#seaweed# InstantiateBaseBtn(IOFunction.CheckCoinPushHardware.ToString(), () => { InitSelectVisibleCoinPushMachinePanel(InitCheckCoinPushHardwarePanel); }, fontSize: fontSize);
 
         if (IOCanvasModel.Instance.CfgData.MachineIdLock == 0 || IOCanvasModel.Instance.permissions == 3) 
@@ -306,7 +322,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         SetParamsGridLayout();
         IOCanvasModel.Instance.SetTempCfgData(IOCanvasModel.Instance.CfgData);
 
-        title.text = Utils.GetLanguage(IOFunction.Params.ToString());
+        title.text = Utils.GetLanguage(IOFunction.Params.ToString()); //"參數設置"
         subtitle.text = "";
         int fontSize = IOCanvasModel.Instance.curlanguage == Language.en ? 38 : 50;
 
@@ -328,7 +344,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         
         
         
-        //#seaweed# InstantiateBaseSection(IOParams.RefundMode.ToString(), Utils.GetEnumNames(typeof(IORefundMode)), IOCanvasModel.Instance.tempCfgData.TicketMode, onClick: () => {   OnSectionClick((int)IOParams.RefundMode, IOSectionState.RefundMode); });
+
         //#seaweed# InistantiateSwitchSection(IOParams.SkillMode.ToString(), IOCanvasModel.Instance.switchList, onClick: SwitchSectionClick);
         //#seaweed# InstantiateBaseSection(IOParams.ClientWinLock.ToString(), IOCanvasModel.Instance.tempCfgData.PlayerWinLock, onClick: () => {   OnSectionClick((int)IOParams.ClientWinLock, IOSectionState.ClientWinLock); }, ioParams: IOParams.ClientWinLock);
         //#seaweed# InstantiateBaseSection(IOParams.OffsetRatio.ToString(), IOCanvasModel.Instance.tempCfgData.PulseValue, onClick: () => {   OnSectionClick((int)IOParams.OffsetRatio, IOSectionState.OffsetRatio); });
@@ -340,11 +356,10 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         InstantiateBaseSection(IOParams.BallValue.ToString(), IOCanvasModel.Instance.tempCfgData.BallValue, onClick: () => { OnSectionClick((int)IOParams.BallValue, IOSectionState.BallValue); }, ioParams: IOParams.BallValue);
 
 
-
         InstantiateBaseSection(IOParams.ScoreUpRatio.ToString(), IOCanvasModel.Instance.tempCfgData.ScoreUpUnit, onClick: () => { OnSectionClick((int)IOParams.ScoreUpRatio, IOSectionState.ScoreUpRatio); }, ioParams: IOParams.ScoreUpRatio);
 
 
-        
+        InstantiateBaseSection(IOParams.RefundMode.ToString(), Utils.GetEnumNames(typeof(IORefundMode)), IOCanvasModel.Instance.tempCfgData.TicketMode, onClick: () => {   OnSectionClick((int)IOParams.RefundMode, IOSectionState.RefundMode); });
 
 
 
@@ -485,7 +500,18 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void InstantiateBillDetal()
     {
+        //#seaweed#
+
+#if true
+
+        float x = 950;
+        string tempStr = IOCanvasModel.Instance.winLockBalance / 10000 > 0 ? $"<color=#F8DF1B>{IOCanvasModel.Instance.winLockBalance / 10000}</color>" : $"<color=#FF0000>{IOCanvasModel.Instance.winLockBalance / 10000}</color>";
+        string str2 = $"{PlayerPrefs.GetString("CurVersion", "1.0.0")}/{IOCanvasModel.Instance.sBoxVersion}/{IOCanvasModel.Instance.CfgData.difficulty}/{tempStr}";
+        diffcultyShow = InstantiateEasyShow(str2, "", parent: transform, fontSize: 35);
+        diffcultyShow.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, -490);
         return;
+
+#else
         string machineIdStr = $"{curSelectMachineId}";
         string lineIdStr = machineIdStr.Substring(0, machineIdStr.Length - 4);
 
@@ -510,6 +536,8 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         string str2 = $"{PlayerPrefs.GetString("CurVersion", "1.0.0")}/{IOCanvasModel.Instance.sBoxVersion}/{IOCanvasModel.Instance.CfgData.difficulty}/{tempStr}";
         diffcultyShow = InstantiateEasyShow(str2, "", parent: transform, fontSize: 35);
         diffcultyShow.GetComponent<RectTransform>().anchoredPosition = new Vector2(x, -490);
+
+#endif
     }
 
 
@@ -1382,6 +1410,11 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
     /// </summary>
     private void ReturnToFunction()
     {
+
+        paramsSectionList.Clear(); //#seaweed# 新加
+
+
+
         if (passwordPanel != null)
         {
             Destroy(passwordPanel.gameObject);
@@ -1414,11 +1447,19 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         if (!selectSection.selected)
             SetCurSelect(curSelect, false);
 
-        if (State == IOState.Params || State == IOState.DateTime || State == IOState.JackpotSetting)
+        if (
+            State == IOState.Params 
+            || State == IOState.DateTime 
+            || State == IOState.JackpotSetting
+            || State == IOState.JackpotParams
+            )
         {
             IOArrowRect.gameObject.SetActive(true);
-            IOArrowRect.anchoredPosition = section.transform.localPosition;
+            IOArrowRect.localScale = new Vector2(1.75f, 1.75f);  // 默认这么大
+            
 
+            /*
+            IOArrowRect.anchoredPosition = section.transform.localPosition;
             switch (State)
             {
                 case IOState.DateTime:
@@ -1438,6 +1479,31 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
                 default:
                     break;
             }
+            */
+
+
+            // Debug.LogError($"contents= {section.Content} ;  Length= {Utils.GetStringVisualWidth(section.Content)} ; index= {curSelect}");
+
+            Vector3 targetPos = section.transform.position; //直接世界坐标赋值， 实现精准重叠
+            switch (State)
+            {
+                case IOState.Params: // 推币机参数-设置界面
+                    {
+                        targetPos.x +=  (200 + Utils.GetStringVisualWidth(section.Content) * 15);// 向右移动，移动到该项的尾部。
+                    }
+                    break;
+                case IOState.JackpotParams: // 彩金参数-设置界面
+                    {
+                        targetPos.x += (200 + Utils.GetStringVisualWidth(section.Content) * 15);// 向右移动，移动到该项的尾部。
+
+                        IOArrowRect.localScale = new Vector2(1f, 1f);
+                    }
+                    break;
+                default:
+                    break;
+            }
+            IOArrowRect.position = targetPos;
+            //rtfmTestDot.position = targetPos;
 
             IOArrowRect.SetAsLastSibling();
         }
@@ -1500,9 +1566,9 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         InstantiateEasyShow("", "");
     }
 
-    private IOBaseShow InstantiateEasyShow(string title, string content, bool showBg = false, TextAnchor contentAlignment = TextAnchor.MiddleLeft, int fontSize = 30, Transform parent = null, float scale = 1)
+    private IOBaseShow InstantiateEasyShow(string title, string content, bool showBg = false, TextAnchor contentAlignment = TextAnchor.MiddleLeft, int fontSize = 30, Transform parent = null, float scale = 1, int style = 0)
     {
-        return InstantiateBaseShow(title, new List<string>() { content }, showBg, contentAlignment: contentAlignment, fontSize: fontSize, parent: parent, scale: scale);
+        return InstantiateBaseShow(title, new List<string>() { content }, showBg, contentAlignment: contentAlignment, fontSize: fontSize, style: style, parent: parent, scale: scale);
     }
 
     private IOBaseShow InstantiateBaseShow(string title, List<string> contentList, bool showBg = false, Transform parent = null, TextAnchor contentAlignment = TextAnchor.MiddleLeft, int fontSize = 30, int style = 0, float scale = 1f)
@@ -1642,13 +1708,34 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         selectionList.Add(baseSelection);
     }
 
-    private void InstantiateBaseSection(string title, int defaultValue = 0, UnityAction onClick = null, bool showBg = false, int style = 0, Transform trans = null, IOParams ioParams = IOParams.Return, int fontSize = -1)
+    private IOBaseSection InstantiateBaseSection(string title, int defaultValue = 0, UnityAction onClick = null, bool showBg = false, int style = 0, Transform parent = null, IOParams ioParams = IOParams.Return, int fontSize = -1)
     {
+        /*
         IOBaseSection baseSelection = style == 0
             ? Instantiate(baseSectionPrefab).GetComponent<IOBaseSection>()
             : Instantiate(baseSectionPrefab1).GetComponent<IOBaseSection>();
-        if (trans)
-            baseSelection.SetParentAndReset(trans);
+        */
+
+
+        //#seaweed# 修改
+        IOBaseSection baseSelection = null;
+        switch (style)
+        {
+            case 2:
+                baseSelection = Instantiate(baseSectionPrefab2).GetComponent<IOBaseSection>();
+                break;
+            case 1:
+                baseSelection = Instantiate(baseSectionPrefab1).GetComponent<IOBaseSection>();
+                break;
+            case 0:
+            default:
+                baseSelection = Instantiate(baseSectionPrefab).GetComponent<IOBaseSection>();
+                break;
+        }
+
+
+        if (parent)
+            baseSelection.SetParentAndReset(parent);
         else
             baseSelection.SetParentAndReset(menuPanel);
         baseSelection.ShowBg = showBg;
@@ -1661,6 +1748,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         baseSelection.AddListener(onClick);
         baseSelection.transform.localScale = Vector3.one;
         selectionList.Add(baseSelection);
+        return baseSelection;
     }
 
 

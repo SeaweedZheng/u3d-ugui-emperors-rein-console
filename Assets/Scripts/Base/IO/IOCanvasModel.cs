@@ -44,6 +44,9 @@ public enum IOState
     EditPassword,
     DateTime,
     JackpotSetting,
+
+    /// <summary> 彩金参数设置界面 </summary>
+    JackpotParams,
     JackpotBet,
     JaclpotWins,
     ProSetting,
@@ -54,6 +57,9 @@ public enum IOState
     CheckCoinPushHardware,
 }
 
+/// <summary>
+/// 修改当前选中的section(修改项)时，使用到
+/// </summary>
 public enum IOSectionState
 {
     GroupId,
@@ -91,6 +97,44 @@ public enum IOSectionState
     JackpotLimit,
     //JackpotLevel,
     WaveGameCount,
+
+
+
+
+
+
+
+
+
+    //彩金
+
+    miniBaseValue,
+    miniMinTriggerValue,
+    miniMaxTriggerValue,
+    miniWeight,
+    miniMinBet,
+    miniMaxBet,
+
+    minorBaseValue,
+    minorMinTriggerValue,
+    minorMaxTriggerValue,
+    minorWeight,
+    minorMinBet,
+    minorMaxBet,
+
+    majorBaseValue,
+    majorMinTriggerValue,
+    majorMaxTriggerValue,
+    majorWeight,
+    majorMinBet,
+    majorMaxBet,
+
+    grandBaseValue,
+    grandMinTriggerValue,
+    grandMaxTriggerValue,
+    grandWeight,
+    grandMinBet,
+    grandMaxBet,
 }
 
 /// <summary>
@@ -126,19 +170,9 @@ public enum IOFunction
 /// </summary>
 public enum IOParams
 {
-    //NewGameMode,
 
     /// <summary> 组id </summary>
-    GroupId,
-
-
-    /// <summary> 倒计时 </summary>
-    //#seaweed# CountDown,
-
-    /// <summary> 最小鼓励 </summary>
-    //#seaweed# MinBet,
-    //LimitBetsWins,
-    //ScoreUpRatio,
+    GroupId = 0,
 
     /// <summary> 投币比例 </summary>
     CoinRatio,
@@ -154,7 +188,21 @@ public enum IOParams
     ScoreUpRatio,
 
     /// <summary> 退票模式 </summary>
-    //#seaweed# RefundMode,
+    RefundMode,//#seaweed#   退票模式，或即中即退
+
+
+    //NewGameMode,
+
+
+    /// <summary> 倒计时 </summary>
+    //#seaweed# CountDown,
+
+    /// <summary> 最小鼓励 </summary>
+    //#seaweed# MinBet,
+    //LimitBetsWins,
+    //ScoreUpRatio,
+
+
     //PrintDensity,
     //PrinterMode,
     //RecordMode,
@@ -187,6 +235,45 @@ public enum IOParams
     ModifiedDate,
     ProSetting,
 
+
+
+
+
+
+
+
+    // ====彩金页参数设置
+
+    miniBaseValue,
+    miniMinTriggerValue,
+    miniMaxTriggerValue,
+    miniWeight,
+    miniMinBet,
+    miniMaxBet,
+
+    minorBaseValue,
+    minorMinTriggerValue,
+    minorMaxTriggerValue,
+    minorWeight,
+    minorMinBet,
+    minorMaxBet,
+
+    majorBaseValue,
+    majorMinTriggerValue,
+    majorMaxTriggerValue,
+    majorWeight,
+    majorMinBet,
+    majorMaxBet,
+
+    grandBaseValue,
+    grandMinTriggerValue,
+    grandMaxTriggerValue,
+    grandWeight,
+    grandMinBet,
+    grandMaxBet,
+
+    //Save,
+    //Return,
 }
 
 public enum IOBill
@@ -227,8 +314,8 @@ public enum IOMagnificationMode
 
 public enum IORefundMode
 {
-    NormalMode,
-    Immediately
+    Immediately,
+    NormalMode
 }
 
 public enum IOPrinterMode
@@ -272,6 +359,9 @@ public enum IONetSwitch
     NetSwitchOpen
 }   
 
+
+
+/**/
 public enum IOJackpotSetting
 {
     JackpotSwitch,
@@ -279,6 +369,11 @@ public enum IOJackpotSetting
     Save,
     Return
 }
+
+
+
+
+
 
 public enum IOJackpotSwitch
 {
@@ -339,7 +434,7 @@ public class BetData
 }*/
 
 
-public class IOCanvasModel : BaseManager<IOCanvasModel>
+public partial class  IOCanvasModel : BaseManager<IOCanvasModel>
 {
     private Dictionary<int, Dictionary<int, List<BetData>>> _betDataDic;
 
@@ -490,14 +585,23 @@ public class IOCanvasModel : BaseManager<IOCanvasModel>
 
 
 
+
+
+    //====联网彩金参数
+    public const int MIN_WEIGHT = 100;
+    public const int MAX_WEIGHT = 1000;
+
+    public const int MIN_MIN_BET = 0;
+    public const int MAX_MIN_BET = 10000;
+
+    public const int MAX_MAX_BET = 10000;
+
+
+
+   //====鳄鱼大亨参数
     public const int MIN_COUNT_DOWN = 10;
     public const int MAX_COUNT_DOWN = 30;
 
-    public const int MIN_MIN_BET = 10;
-    public const int MAX_MIN_BET = 1000;
-
-    public const int MIN_MAX_BET = 100;
-    public const int MAX_MAX_BET = 9999;
 
     public const int MIN_LIMIT_BETS_WINS = 1000;
     public const int MAX_LIMIT_BETS_WINS = 100000;
@@ -725,3 +829,7 @@ public class PlayInfo
     public int seatId = -1;
     public float lastHeartbeatTimeS = 0;
 }
+
+
+
+

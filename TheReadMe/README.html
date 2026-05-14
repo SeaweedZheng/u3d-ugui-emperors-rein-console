@@ -100,6 +100,14 @@ class="language-sql"
 
 Assets/Scripts/Custom
 
+<h1> ====打包版本号修改 </h1>
+修改版本号： "Assets/StreamingAssets/Version.txt"
+
+临时规定
+正式版本: 尾号采用单号
+测试版本: 尾号采用双号
+
+测试版本测试完，“正式版本”在“测试版本”版本号的尾号上+1
 
 <h1> ====打包流程 </h1>
 
@@ -131,6 +139,9 @@ Assets/Scripts/Custom
 
 * 每次打包要手动修改该热更版本号
 
+<h1> ====快捷键</h1>
+F1 ： 进入后台
+R : 打开日志界面
 
 <h1> Flutter风格的UI界面 </h1>
 
@@ -144,9 +155,63 @@ AB包名： "io"
 
 
 
+<h1> ====UI框架概要：</h1>
 
 
-<h1> ====页面逻辑 </h1>
+* 加载所有“积木”预制体。
+* 每次刷新界面都是每：删除页面所有“积木”预制体，和创建新的“积木”预制体集合。
+
+
+
+
+* 游戏主页ui(预制体)、后台主页IOCanvas(预制体)
+
+* 后台只有一个主页IOCanvas，其他的子级子页，子子级子页，都是动态改变IOCanvas/menuPanel节点底下的内容（自己内容）
+
+* 后台的修改项在 IOCanvas/menuPanel底下
+
+* 当前页面标志位（子级子页，子子级子页...的标志位）：IOState
+
+* 每个修改项为一个section，包括名称、值、可点击修改。
+
+
+* 参数设置页面，每个修改项(section)是一个:
+
+class IOBaseShow : IOBaseBtnSelection
+
+class IOBaseBtnSelection : IOBaseSelection
+
+class IOBaseSelection : MonoBehaviour
+
+class IOBaseBtn : IOBaseBtnSelection
+
+
+
+
+* 后台主页IOCanvas预制体，绑定的view脚本：IOCanvasView
+
+
+
+
+
+
+<h1> ====页面显示</h1>
+* InstantiateXXXX 接口，通过参数 [int style] 判断要克隆那个预制体！(用来创建一个section对象)
+并挂到menuPanel节点下，或传入的父节点
+
+* 所有提供给页面显示的预制体积块，都挂有组件IOBaseShow
+
+
+InstantiateBaseToggle
+InstantiateBaseBtn
+InstantiateBaseShow
+
+
+
+
+
+
+<h1> ====主页分类 </h1>
 
 * 分为主页面、后台页面
 
@@ -159,33 +224,220 @@ AB包名： "io"
 <h1> ====页面类====</h1>
 
 
-## View： 主类
-
-
 
 <h1> 页面预制体</h1>
 
-ui： 主界面预制体
+* ui： 主界面预制体
 
-IOCanvas： 后台主页面预制体
+* IOCanvas： 后台主页面预制体
 
-
-
-EditIdDeleteBtnClick()  ：按键
+//EditIdDeleteBtnClick()  ：按键
 
 <h1> 页面业务逻辑脚本：</h1>
 
+* View： 主页面的 业务逻辑脚本
+
+* IOCanvasView： 后台主页的 业务逻辑脚本
+
+
 <h2>主页面-业务逻辑脚本 View</h2>
+
 View : 主页面-业务逻辑脚本
 
 
 <h2>后台页面-业务逻辑脚本 IOCanvasView</h2>
 
 
+<h1> 页面初始化结束后调用 </h1>
 
+* 脚本： Assets/Scripts/Custom/Controller.cs
+
+* Controller 是个单例，是主页面View的控制器。
+
+private void OnInitViewFinish()  // view初始化结束后调用
+
+
+
+<h1> ====通用弹窗 </h1>
+
+IOPopTips.Instance.ShowTips(Utils.GetLanguage("Comming soon"))  // 弹窗敬请期待
 
 
 <h1> ====后台页面 </h1>
+
+<h1> 概念 </h1>
+
+* section: 子页面的每个修改项
+
+* State: 当前子页面状态。即处于那个子页面
+
+* InitXXXPanel： 设置子页面内容
+
+
+
+<h1> 后台页面子页创建方法介绍 </h1>
+
+InitXXXPanel : 类似这种格式，是用来创建子页面的。
+
+InitManagerPasswordPanel ： 输入玩家密码。
+InitFunctionPanel : 后台主菜单页面入口函数。
+InitParamsPanel ： 参数设置页
+InitCodePanel ： 激活报表
+InitEditPasswordPanel ： 修改密码
+InitProSettingPanel： 专业设置（线号、机台号）
+
+<h2> 后台页-子页结构</h2>
+
+
+void InitXXXPanel(){
+
+	// 删除已有界面
+	
+	// 设置界面格式（修改默认子界面父节点：IOCanvas/menuPanel 的GridLayoutGroup组件参数）
+	
+	// 设置抬头内容
+	
+	// 备份数据？
+	
+	// 创建修改项Section 集合 （默认挂到IOCanvas/menuPanel节点下）
+	
+	// 【可选】创建自定义父节点，并添加到tempObjList 对象。 （能用来自定义子页的排版。）
+	
+	
+	
+	// 设置当前页面状态
+
+
+}
+
+
+
+
+
+<h1> 后台页-子页的修改项Section</h1>
+
+InstantiateXXX : 类似这种格式，是用来创建修改项的。
+
+
+* InstantiateXXX 如果不出入父类，则默认使用：menuPanel  （IOCanvas/menuPanel）
+
+* IOCanvas/menuPanel 挂有 GridLayoutGroup组件（gridLayout变量）
+
+
+* tempObjList 对象， 存放自定义父类，能用来自定义子页的排版。
+
+
+* IOSectionState , 这个是Section的类型！ （修改当前选定的Section时，使用到！）
+
+
+
+
+<h1> 修改项Section基类IOBaseSection </h1>
+
+* 变量CurIndex ： 修改项Section 的内容
+
+* 变量state ： 修改项Section 的类型（IOSectionState 枚举）  
+
+
+
+<h1> 子页的修改项Section - 相关接口</h1>
+
+
+<h2> OnSectionClick “修改项”点击处理接口 </h2>
+
+* 当前Section的索引 和 枚举IOParams 中定义的变量顺序，正相关。
+
+* 设置当前选中的 Section 
+
+* 用来设置“上下设置箭头”的位置。
+
+
+
+
+<h2> KeyUp 加减回调函数</h2>
+ 
+IOCanvasViewController :  后台修改参数，加减回调脚本。
+ 
+void KeyUp(bool isAdd) ： 加减回调函数。
+
+
+
+<h2>长按箭头加、长按箭头减（快速加减）</h2>
+
+SelectedSectionDownAndLeft ： 长按减函数
+
+SelectedSectionUpAndRight ： 长按加函数
+
+
+<h2>确定按钮，返回按钮 -- 回调：</h2>
+
+void OnRefreshIOCanvas() ： 保存桉树修改
+
+-- IOState State
+ 
+* 这里设计到同步ui索引 和 枚举IOParams 有关！
+ 
+* 这个方法是由事件触发:  EventCenter.Instance.EventTrigger(EventHandle.REFRESH_IOCANVAS);
+ 
+ 
+<h2>【接口】确定按钮，保留修改</h2>
+
+IOCanvasView.SaveConfig()
+
+
+<h2>【接口】实际值同步给 tempCfgData</h2>
+
+IOCanvasModel.SetTempCfgData()
+
+tempCfgData属性： 用来存放后台修改界面，所有参数的修改值
+
+ 
+### IOState ： 【枚举】 ： 后台那个界面：
+  State = IOState.Params; -- 参数设置界面
+
+ 
+         Debug.LogError("OnRefreshIOCanvas"); ？？
+		 
+		  Confirm ？？
+		  
+		  
+		  
+		  
+		  IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId
+		  
+## 如何查看页面显示的内容：
+
+通过 Utils.GetLanguage() 接口的应用，反查出“界面内容”在哪里编写。
+
+
+
+<h2>其他</h2>
+<h2>其他</h2>
+
+## 返回按钮的写法：
+
+GameObject parent = new GameObject();
+tempObjList.Add(parent);
+parent.AddComponent<HorizontalLayoutGroup>();
+parent.transform.parent = menuPanel;
+parent.transform.localScale = Vector3.one;
+InstantiateBaseBtn("Return", ReturnToFunction, parent: parent.transform, style: 2, scale: 1f);
+var baseShow2 = InstantiateEasyShow(Utils.GetLanguage("ClickCancleTips"), "", parent: transform, fontSize: 40);
+
+
+
+private IOBaseBtn InstantiateBaseBtn(string str, 
+UnityAction unityAction, 
+bool showBg = true, 
+TextAnchor textAnchor = TextAnchor.MiddleCenter, 
+Transform parent = null, 
+int style = 1, 
+int fontSize = 20, 
+float scale = 1)
+
+
+
+
 
 
 <h1> 后台页面结构 </h1>
@@ -194,7 +446,12 @@ View : 主页面-业务逻辑脚本
 
 ## 后台主菜单页、每个子页，都是IOCanvas的子节点。
 * 一个根页面节点，不同的子页面通过删除根节点下的内容，重新创建新内容来实现。
-* 不同子页面，通过状态 IOState 来标记。
+* 不同子页面，通过状态 IOState 来标记！！
+
+        State = IOState.Params; // 参数页面
+		State = IOState.JackpotSetting; // 彩金参数设置页
+		
+		
 
 * IOCanvas/menuPanel
 不同子页面，轮流修改menuPanel内容 - 即当前显示的内容
@@ -213,19 +470,95 @@ View : 主页面-业务逻辑脚本
 ## IOCanvasView： 后台页面-逻辑业务脚本
 
 
+<h1> 主页面、后台页面，脚本拆分 </h1>
 
-<h1> 后台页面业务逻辑 - IOCanvasView</h1>
+
+## 主页View面是： mono实例(View) +  控制器单例(Controller)
+
+## 后台页面是： mono单例(IOCanvasView)  + 控制器单例 IOCanvasManager () 
+
+IOCanvasView.cs   后台页面渲染
+IOCanvasViewController.cs   后台页面UI逻辑
+IOCanvasManager.cs   后台页面逻辑
+
+IOCanvasModel.cs 数据存放的model
+
+
+
+
+
+<h2> IOCanvasView </h2>
+* 监听UI事件
+
+<h2> IOCanvasManager </h2>
+
+* 监听算法卡接口
+
+
+
+<h1> 后台页面-View业务逻辑 - IOCanvasView</h1>
+
+* 监听算法卡接口
+
+<h2>概要 </h2>
+
+
+selectSection ： 单前选择的，要进行修改的子项（如：投币比例、退票比例、...）
+
+void InitFunctionPanel() : 后台主菜单页面入口函数。
+
+
+private void OnSectionClick(int index, IOSectionState sectionState): 子项点击时，设置当前选择的子项信息
+
+
+
+enum IOParams ： 枚举IOParams 决定了子项的排列顺序！！！
+
+<h2>子项的排列顺序：enum IOParams</h2>
+# enum IOParams ： 枚举IOParams 决定了子项的排列顺序！！！
+
+# 在函数 OnSectionClick ： 设定当前选择“第几个”子项中用到！！
+
+
+# InitParamsPanel() 函数中： 子项的实例化顺序（InstantiateCoinRatioSection、InstantiateBaseSection 的调用顺序）
+必须和IOParams枚举中子项声明顺序一致！
+只有在页面生成实例化函数InitParamsPanel 中，要注意“枚举的顺序 要和 实例化顺序一致”！ 此外其他地方不用再次当心！
+
 
 <h2>入口函数：InitFunctionPanel </h2>
 
-void InitFunctionPanel() : 后台主菜单页面入口。
+void InitFunctionPanel() : 后台主菜单页面入口函数。
 
+
+<h2>设置当前选中的子项：OnSectionClick </h2>
+private void OnSectionClick(int index, IOSectionState sectionState)
+
+index： 当前选择第几个子项
+sectionState： 当前选中子项的类别
+
+
+
+<h2>设置子页面内容：InitXXXPanel </h2>
+
+InitParamsPanel() // 参数设置界面
+
+<h2>设置子页面内，某块内容：InstantiateXXXSection </h2>
+
+* InstantiateBaseSection
+* InstantiateCoinRatioSection
+* InstantiateTicketRatioSection
+* InstantiateBlank // 显示换行
+
+* InstantiateBaseBtn // 显示按钮
+
+
+<h2>其他 </h2>
 
 IOBaseBtn InstantiateBaseBtn(...) // 后台主从菜单页-添加子项按钮
  
  
 
-InitParamsPanel() // 参数设置界面
+
 
 
 
@@ -335,82 +668,6 @@ InstantiateBlank();
 
 
 
-## 返回按钮的写法：
-
-GameObject parent = new GameObject();
-tempObjList.Add(parent);
-parent.AddComponent<HorizontalLayoutGroup>();
-parent.transform.parent = menuPanel;
-parent.transform.localScale = Vector3.one;
-InstantiateBaseBtn("Return", ReturnToFunction, parent: parent.transform, style: 2, scale: 1f);
-var baseShow2 = InstantiateEasyShow(Utils.GetLanguage("ClickCancleTips"), "", parent: transform, fontSize: 40);
-
-
-
-private IOBaseBtn InstantiateBaseBtn(string str, 
-UnityAction unityAction, 
-bool showBg = true, 
-TextAnchor textAnchor = TextAnchor.MiddleCenter, 
-Transform parent = null, 
-int style = 1, 
-int fontSize = 20, 
-float scale = 1)
-
-
-
-
-
-<h3> ## 参数设置的加减回调脚本： </h3>
- 
-IOCanvasViewController :  后台修改参数，加减回调脚本。
- 
-void KeyUp(bool isAdd) ： 加减回调函数。
-
-
-
-<h3>## 长按箭头加、长按箭头减（快速加减）</h3>
-
-SelectedSectionDownAndLeft ： 长按减函数
-
-SelectedSectionUpAndRight ： 长按加函数
-
-
-<h3>## 确定按钮，返回按钮 -- 回调：</h3>
-
-void OnRefreshIOCanvas() ： 保存桉树修改
-
- -- IOState State
- 
- 
-<h3>## 【接口】确定按钮，保留修改</h3>
-
-IOCanvasView.SaveConfig()
-
-
-<h3>## 【接口】实际值同步给 tempCfgData</h3>
-
-IOCanvasModel.SetTempCfgData()
-
-tempCfgData属性： 用来存放后台修改界面，所有参数的修改值
-
- 
-### IOState ： 【枚举】 ： 后台那个界面：
-  State = IOState.Params; -- 参数设置界面
-
- 
-         Debug.LogError("OnRefreshIOCanvas"); ？？
-		 
-		  Confirm ？？
-		  
-		  
-		  
-		  
-		  IOCanvasModel.Instance.groupId}  tempGroupId: {IOCanvasModel.Instance.tempGroupId
-		  
-## 如何查看页面显示的内容：
-
-通过 Utils.GetLanguage() 接口的应用，反查出“界面内容”在哪里编写。
-
 
 # ====页面修改
 
@@ -518,17 +775,25 @@ Messenger.AddListener<byte[]>(MessageName.Event_NetworkClientData, OnClientData)
 	
 	
 	
-	NetCmd
+NetCmd
 	
 	
 	
 	
+最新版本号： 1.0.253
 	
+<h1>====主机彩金参数设置原则</h1>
+
+# 基础值
+* 最低级的彩金基础值范围是：100~1000 （即： 基本值 ~ 基本值 x 10）
+* 最低级的彩金基础值增加量是：100 x（1倍 / 1.5倍 / 2倍 .... 9.5倍 / 10倍）
+
+
+# 最小触发值
+* 最小触发值： 当前基础值的1.1倍
 	
-	
-	
-	
-	
+# 最大触发值
+* 	
 	
 	
 	
