@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿#define OLD_MENU_RECTTRANSFORM_0   //#seaweed# 定义个宏变量，用来还原就得样式
+using Newtonsoft.Json;
 using SBoxApi;
 using System;
 using System.Collections;
@@ -206,10 +207,25 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         if (passwordPanel != null)
             return;
         IOCanvasModel.Instance.state = IOState.CheckPermissions;
+
+
+#if OLD_MENU_RECTTRANSFORM_1
         passwordPanel = Instantiate(basePassword, transform).GetComponent<IOPasswordPanel>();
         passwordPanel.SetParams(placeholderStr: "Please enter password");
         passwordPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(30, 450);
         passwordPanel.transform.localScale = Vector3.one;
+
+
+#else
+        passwordPanel = Instantiate(basePassword, transform).GetComponent<IOPasswordPanel>();
+        passwordPanel.SetParams(placeholderStr: "Please enter password", localScal: 0.7f);
+        // 添加居中样式
+        RectTransform rectPasswordPanel = passwordPanel.GetComponent<RectTransform>();
+        rectPasswordPanel.anchoredPosition = new Vector2(0, 0);
+        rectPasswordPanel.anchorMin = new Vector2(0.5f, 0.5f);
+        rectPasswordPanel.anchorMax = new Vector2(0.5f, 0.5f);
+        rectPasswordPanel.pivot = new Vector2(0.5f, 0.5f);
+#endif
     }
 
     public void DestroyManagerPasswordPanel()
@@ -231,6 +247,8 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void SetMenuGridLayout()
     {
+
+#if OLD_MENU_RECTTRANSFORM_1
         gridLayout = menuPanel.GetComponent<GridLayoutGroup>();
         gridLayout.cellSize = new Vector2(490f, 150f);
         gridLayout.padding = new RectOffset(0, 0, 0, 0);
@@ -242,6 +260,28 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         gridLayout.childAlignment = TextAnchor.UpperCenter;
         gridLayout.spacing = new Vector2(180f, 30f);
         gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
+#else
+
+        gridLayout = menuPanel.GetComponent<GridLayoutGroup>();
+        gridLayout.cellSize = new Vector2(490f, 150f);
+        gridLayout.padding = new RectOffset(80, 80, 0, 0);  //RectOffset(左, 右, 上, 下);
+        gridLayout.childAlignment = TextAnchor.UpperCenter;
+        gridLayout.spacing = new Vector2(180f, 30f);
+        gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
+
+        gridLayoutRect = menuPanel.GetComponent<RectTransform>();
+
+        // 设置锚点：顶部拉伸
+        gridLayoutRect.anchorMin = new Vector2(0, 1);
+        gridLayoutRect.anchorMax = new Vector2(1, 1);
+        // 左右 = 0
+        gridLayoutRect.offsetMin = new Vector2(0, gridLayoutRect.offsetMin.y);
+        gridLayoutRect.offsetMax = new Vector2(0, gridLayoutRect.offsetMax.y);
+        // 高度 = 950
+        gridLayoutRect.sizeDelta = new Vector2(gridLayoutRect.sizeDelta.x, 950);
+        // Y 位置 = -610
+        gridLayoutRect.anchoredPosition = new Vector2(gridLayoutRect.anchoredPosition.x, -610);
+#endif
     }
 
     public void ClearMenuBtn()
@@ -370,9 +410,24 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         parent.AddComponent<HorizontalLayoutGroup>();
         parent.transform.parent = transform;
         var parentRect = parent.GetComponent<RectTransform>();
+
+
+
+#if OLD_MENU_RECTTRANSFORM_1
         parentRect.anchoredPosition = new Vector2(0, -430);
         parentRect.sizeDelta = new Vector2(975, 100);
         parentRect.localScale = Vector3.one;
+#else
+
+        parentRect.anchoredPosition = new Vector2(0, 80f); //PosX PosY
+        parentRect.localScale = Vector3.one;
+        parentRect.sizeDelta = new Vector2(975, 100);
+        parentRect.anchorMin = new Vector2(0.5f, 0);
+        parentRect.anchorMax = new Vector2(0.5f, 0);
+        parentRect.pivot = new Vector2(0.5f, 0);
+#endif
+
+
         InstantiateBaseBtn("Save", SaveConfig, parent: parent.transform, style: 2);
         InstantiateBaseBtn("Return", ReturnToFunction, parent: parent.transform, style: 2);
         curSelect = 0;
@@ -383,9 +438,25 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         var paramsDescrText = paramsDescr.AddComponent<Text>();
         paramsDescr.transform.parent = transform;
         var paramsDescrRect = paramsDescr.GetComponent<RectTransform>();
+
+
+#if OLD_MENU_RECTTRANSFORM_1
         paramsDescrRect.anchoredPosition = new Vector2(707, -480);
         paramsDescrRect.sizeDelta = new Vector2(458, 200);
         paramsDescrRect.localScale = Vector3.one;
+#else
+
+        paramsDescrRect.anchoredPosition = new Vector2(680, 80f); //PosX PosY
+        paramsDescrRect.localScale = Vector3.one;
+        paramsDescrRect.sizeDelta = new Vector2(458, 100);
+        paramsDescrRect.anchorMin = new Vector2(0.5f, 0);
+        paramsDescrRect.anchorMax = new Vector2(0.5f, 0);
+        paramsDescrRect.pivot = new Vector2(0.5f, 0);
+
+        paramsDescrText.alignment = TextAnchor.MiddleLeft;
+
+#endif
+
         paramsDescrText.text = Utils.GetLanguage("ParamsDescr1");
         paramsDescrText.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
         paramsDescrText.fontStyle = FontStyle.Bold;
@@ -397,14 +468,37 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void SetParamsGridLayout()
     {
+#if OLD_MENU_RECTTRANSFORM_1
         gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
         gridLayout.childAlignment = TextAnchor.UpperLeft;
         gridLayout.spacing = new Vector2(295.5f, 55f);
         gridLayout.cellSize = new Vector2(350, 67.5f);
         gridLayout.padding = new RectOffset(0, 0, 0, 0);
+
+
         gridLayoutRect.sizeDelta = new Vector2(845, 680);
         gridLayoutRect.anchoredPosition = new Vector2(-355, 560);
 
+#else
+
+        gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
+        gridLayout.childAlignment = TextAnchor.UpperLeft;
+        gridLayout.spacing = new Vector2(295.5f, 55f);
+        gridLayout.cellSize = new Vector2(350, 67.5f);
+        gridLayout.padding = new RectOffset(80, 80, 0, 0);  //RectOffset(左, 右, 上, 下);
+
+
+        // 设置锚点：顶部拉伸
+        gridLayoutRect.anchorMin = new Vector2(0, 1);
+        gridLayoutRect.anchorMax = new Vector2(1, 1);
+        // 左右 = 0
+        gridLayoutRect.offsetMin = new Vector2(0, gridLayoutRect.offsetMin.y);
+        gridLayoutRect.offsetMax = new Vector2(0, gridLayoutRect.offsetMax.y);
+        // 高度 = 950
+        gridLayoutRect.sizeDelta = new Vector2(gridLayoutRect.sizeDelta.x, 950);
+        // Y 位置 = -610
+        gridLayoutRect.anchoredPosition = new Vector2(gridLayoutRect.anchoredPosition.x, -610);   // 修改PosX PosY
+#endif
     }
 
     private void InitBillPanel()
@@ -895,10 +989,25 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         InstantiateBaseShow($"E.{Utils.GetLanguage("Code1")}", new List<string> { IOCanvasModel.Instance.coderData.CheckValue.ToString() }, style: 4, scale: 1, fontSize: 40);
         InstantiateBaseShow(Utils.GetLanguage("TimeLeft"), new List<string> { IOCanvasModel.Instance.GetDate(IOCanvasModel.Instance.coderData.RemainMinute) }, style: 4, scale: 1, fontSize: 40);
 
+
+#if OLD_MENU_RECTTRANSFORM_1
         passwordPanel = Instantiate(basePassword, transform).GetComponent<IOPasswordPanel>();
         passwordPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(468, 555);
         passwordPanel.SetParams(InputField.ContentType.Standard, "Please enter code", localScal: 0.7f);
         selectionList.AddRange(passwordPanel.GetSelectionList());
+
+#else
+        passwordPanel = Instantiate(basePassword, transform).GetComponent<IOPasswordPanel>();
+        RectTransform rectPwdPanel = passwordPanel.GetComponent<RectTransform>();
+        rectPwdPanel.anchoredPosition = new Vector2(468, -320f);
+        rectPwdPanel.anchorMin = new Vector2(0.5f, 1);
+        rectPwdPanel.anchorMax = new Vector2(0.5f, 1);
+        rectPwdPanel.pivot = new Vector2(0.5f, 1);
+
+        passwordPanel.SetParams(InputField.ContentType.Standard, "Please enter code", localScal: 0.7f);
+        selectionList.AddRange(passwordPanel.GetSelectionList());
+#endif
+
 
         InstantiateBlank();
         InstantiateBlank();
@@ -917,7 +1026,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         State = IOState.Code;
         curSelect = 0;
         SetCurSelect();
-        InstantiateBillDetal();
+        //#seaweed# 去掉这个InstantiateBillDetal(); 
         IOPopTips.Instance.transform.SetAsLastSibling();
     }
 
@@ -1168,6 +1277,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void SetCodePanelGridLayout()
     {
+#if OLD_MENU_RECTTRANSFORM_1
         gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
         gridLayout.childAlignment = TextAnchor.UpperCenter;
         gridLayout.padding = new RectOffset(0, 0, 15, 0);
@@ -1176,6 +1286,27 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         gridLayoutRect.sizeDelta = new Vector2(1000, 820);
         gridLayoutRect.anchoredPosition = new Vector2(0, 460);
 
+#else
+
+
+        gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
+        gridLayout.childAlignment = TextAnchor.UpperLeft;
+        gridLayout.padding = new RectOffset(200, 80, 0, 0);  //RectOffset(左, 右, 上, 下);
+        gridLayout.spacing = new Vector2(40, 20);
+        gridLayout.cellSize = new Vector2(780, 70);
+
+
+        // 设置锚点：顶部拉伸
+        gridLayoutRect.anchorMin = new Vector2(0, 1);
+        gridLayoutRect.anchorMax = new Vector2(1, 1);
+        // 左右 = 0
+        gridLayoutRect.offsetMin = new Vector2(0, gridLayoutRect.offsetMin.y);
+        gridLayoutRect.offsetMax = new Vector2(0, gridLayoutRect.offsetMax.y);
+        // 高度 = 950
+        gridLayoutRect.sizeDelta = new Vector2(gridLayoutRect.sizeDelta.x, 950);
+        // Y 位置 = -610
+        gridLayoutRect.anchoredPosition = new Vector2(gridLayoutRect.anchoredPosition.x, -610);
+#endif
 
     }
 
@@ -1214,12 +1345,30 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
         var baseShow1 = InstantiateEasyShow(Utils.GetLanguage("EditPasswordShow"), "", parent: transform, scale: 1);
         baseShow1.GetComponent<RectTransform>().anchoredPosition = new Vector3(55, 375);
+
+
+        /*#seaweed# 拿掉空行
         for (int i = 0; i < 9; i++)
             InstantiateBlank();
+        */
+
         passwordPanel = Instantiate(basePassword, transform).GetComponent<IOPasswordPanel>();
-        passwordPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 515);
         passwordPanel.SetParams(InputField.ContentType.Password, "Please enter new password", localScal: 0.7f);
         selectionList.AddRange(passwordPanel.GetSelectionList());
+
+#if OLD_MENU_RECTTRANSFORM_1
+        passwordPanel.GetComponent<RectTransform>().anchoredPosition = new Vector2(0, 515);
+
+#else
+
+        RectTransform rectPwdPanel = passwordPanel.GetComponent<RectTransform>();
+        rectPwdPanel.anchoredPosition = new Vector2(0, -80);  // 修改PosX PosY
+        rectPwdPanel.anchorMin = new Vector2(0.5f, 0.5f);
+        rectPwdPanel.anchorMax = new Vector2(0.5f, 0.5f);
+        rectPwdPanel.pivot = new Vector2(0.5f, 0.5f);
+
+#endif
+
         InstantiateBaseBtn("Return", ReturnToFunction, style: 2, scale: 1);
         //#seaweed# var baseShow2 = InstantiateEasyShow(Utils.GetLanguage("ClickCancleTips"), "", parent: transform, fontSize: 40);
         //#seaweed# baseShow2.GetComponent<RectTransform>().anchoredPosition = IOCanvasModel.Instance.curlanguage == Language.en ? new Vector2(-50, -340) : new Vector2(205, -340);
@@ -1396,6 +1545,7 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
 
     private void SetEditPasswordGridLayout()
     {
+#if OLD_MENU_RECTTRANSFORM_1
         gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
         gridLayout.childAlignment = TextAnchor.UpperCenter;
         gridLayout.padding = new RectOffset(0, 0, 20, 0);
@@ -1403,6 +1553,28 @@ public partial class IOCanvasView : MonoSingleton<IOCanvasView>
         gridLayout.cellSize = new Vector2(600, 75);
         gridLayoutRect.sizeDelta = new Vector2(845, 960);
         gridLayoutRect.anchoredPosition = new Vector2(0, 505);
+
+
+#else
+
+
+        gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
+        gridLayout.childAlignment = TextAnchor.LowerCenter;
+        gridLayout.spacing = new Vector2(0, 0);
+        gridLayout.cellSize = new Vector2(0, 0);
+        gridLayout.padding = new RectOffset(0, 0, 110, 100);  //RectOffset(左, 右, 上, 下);
+
+        // 设置锚点：顶部拉伸
+        gridLayoutRect.anchorMin = new Vector2(0, 0);
+        gridLayoutRect.anchorMax = new Vector2(1, 1);
+        // 四个边偏移 = 0 → left=0, right=0, top=0, bottom=0
+        gridLayoutRect.offsetMin = new Vector2(0, 0);
+        gridLayoutRect.offsetMax = new Vector2(0, 0);
+        // Y 位置 = -610
+        gridLayoutRect.pivot = new Vector2(0.5f, 0.5f);
+
+#endif
+
     }
 
     /// <summary>

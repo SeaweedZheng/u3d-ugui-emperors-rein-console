@@ -35,7 +35,7 @@ public partial class IOCanvasView
 
         // 参数备份
         IOCanvasModel.Instance.SetTempJackCfgData(IOCanvasModel.Instance.JackCfgData); 
-        InstantiateEasyShow(Utils.GetLanguage("baseValue"), $":{IOCanvasModel.Instance.JackCfgData.BaseSetValue / 100}", style: 0);
+        InstantiateEasyShow(Utils.GetLanguage("baseValue") + ":", $"{IOCanvasModel.Instance.JackCfgData.BaseSetValue / 100}", style: 0);
 
 
         int offsetIndex = (int)IOParams.miniBaseValue;
@@ -243,10 +243,28 @@ public partial class IOCanvasView
         tempObjList.Add(parent);
         parent.AddComponent<HorizontalLayoutGroup>();
         parent.transform.parent = transform;
+
+
+#if OLD_MENU_RECTTRANSFORM_1
+
         var parentRect = parent.GetComponent<RectTransform>();
         parentRect.anchoredPosition = new Vector2(0, -430);
         parentRect.sizeDelta = new Vector2(975, 100);
         parentRect.localScale = Vector3.one;
+#else
+
+        var parentRect = parent.GetComponent<RectTransform>();
+        parentRect.anchoredPosition = new Vector2(0, 60);
+        parentRect.sizeDelta = new Vector2(975, 100);
+        parentRect.localScale = Vector3.one;
+        parentRect.anchorMin = new Vector2(0.5f, 0);
+        parentRect.anchorMax = new Vector2(0.5f, 0);
+        parentRect.pivot = new Vector2(0.5f, 0);
+#endif
+
+
+
+
         InstantiateBaseBtn("Save", SaveJackpotConfig, parent: parent.transform, style: 2);
         InstantiateBaseBtn("Return", ReturnToFunction, parent: parent.transform, style: 2);
         curSelect = 0;
@@ -274,6 +292,10 @@ public partial class IOCanvasView
 
     private void SetJackpotParamsGridLayout()
     {
+
+
+#if OLD_MENU_RECTTRANSFORM_1
+
         gridLayout.cellSize = new Vector2(245, 0f);
         gridLayout.padding = new RectOffset(0, 0, 30, 0);
         gridLayoutRect = menuPanel.GetComponent<RectTransform>();
@@ -284,8 +306,31 @@ public partial class IOCanvasView
         gridLayout.childAlignment = TextAnchor.UpperCenter;
         gridLayout.spacing = new Vector2(0f, 0);
         gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
-    }
 
+#else
+
+
+        gridLayout.startAxis = GridLayoutGroup.Axis.Vertical;
+        gridLayout.childAlignment = TextAnchor.UpperCenter;
+        gridLayout.spacing = new Vector2(0, 0);
+        gridLayout.cellSize = new Vector2(300, 80);
+        gridLayout.padding = new RectOffset(0, 0, 110, 100);  //RectOffset(左, 右, 上, 下);
+
+        // 设置锚点：顶部拉伸
+        gridLayoutRect.anchorMin = new Vector2(0, 0);
+        gridLayoutRect.anchorMax = new Vector2(1, 1);
+        // 四个边偏移 = 0 → left=0, right=0, top=0, bottom=0
+        gridLayoutRect.offsetMin = new Vector2(0, 0);
+        gridLayoutRect.offsetMax = new Vector2(0, 0);
+        // Y 位置 = -610
+        gridLayoutRect.pivot = new Vector2(0.5f, 0.5f);
+
+#endif
+
+
+
+
+    }
 
 
     /// <summary>
